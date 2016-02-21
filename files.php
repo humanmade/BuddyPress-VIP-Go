@@ -87,6 +87,8 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 
 	// 1) Upload file.
 	$result = $GLOBALS['VIPBP']->bp_upload_file( $upload_dir_filter, $file, $object_id );
+	wp_mail( 'p@hmn.md', 'BP image debug', print_r( $result, true ) );
+	exit;
 
 
 	// Return false to shortcircuit bp_core_avatar_handle_upload().

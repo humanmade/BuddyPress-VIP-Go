@@ -39,6 +39,6 @@ class VIPBP_FHS extends A8C_Files {
 			'url'  => $upload_url,
 		), 'editor_save' );
 
-		// die(var_dump( $response ));
+		return $response;
 	}
 }
