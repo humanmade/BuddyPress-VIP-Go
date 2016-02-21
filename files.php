@@ -68,6 +68,8 @@ function vipbp_change_user_avatar_urls( $_, $params ) {
  * @return false
  */
 function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
+	wp_mail( 'p@hmn.md', 'BP image debug', 'In vipbp_handle_avatar_upload' );
+
 	if ( ! isset( $GLOBALS['VIPBP'] ) ) {
 		// @todo should this happen?
 		wp_mail( 'p@hmn.md', 'BP image debug', 'Missing global.' );
