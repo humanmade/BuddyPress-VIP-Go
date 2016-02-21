@@ -79,7 +79,7 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 		$object_id = bp_get_displayed_user_id();
 
 	} elseif ( $upload_dir_filter === 'groups_avatar_upload_dir' ) {
-		$object_id = bp_get_current_group_id()();
+		$object_id = bp_get_current_group_id();
 
 	} else {
 		// @todo Do something here?
