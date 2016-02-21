@@ -24,7 +24,7 @@ add_action( 'bp_loaded', function() {
 	// Extends Automattic's FHS plugin for BuddyPress.
 	if ( defined( 'FILES_CLIENT_SITE_ID' ) && defined( 'FILES_ACCESS_TOKEN' ) ) {
 		add_action( 'bp_init', function() {
-			new VIPBP_FHS();
-		} );
+			$GLOBALS['VIPBP'] = new VIPBP_FHS();
+		}, 1 );
 	}
 } );
