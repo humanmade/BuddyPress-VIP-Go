@@ -76,22 +76,8 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 
 	$bp = buddypress();
 
-	if ( $upload_dir_filter === 'xprofile_avatar_upload_dir' ) {
-		$object_id = bp_get_displayed_user_id();
-
-	} elseif ( $upload_dir_filter === 'groups_avatar_upload_dir' ) {
-		$object_id = bp_get_current_group_id();
-
-	} else {
-		// @todo Do something here?
-	}
-
 	// 1) Upload file.
-	wp_mail( 'p@hmn.md', 'In vipbp_handle_avatar_upload', 'hello world' );
-	$result = $GLOBALS['VIPBP']->bp_upload_file( $upload_dir_filter, $file, $object_id );
-	wp_mail( 'p@hmn.md', 'BP image debug', print_r( $result, true ) );
-	exit;
-
+	$result = $GLOBALS['VIPBP']->bp_upload_file( $upload_dir_filter, $file );
 
 	// Return false to shortcircuit bp_core_avatar_handle_upload().
 	return false;

@@ -20,33 +20,35 @@ class VIPBP_FHS extends A8C_Files {
 	 *
 	 * @param string $upload_dir_filter A filter we use to determine avatar type.
 	 * @param string $file Appropriate entry from $_FILES superglobal.
-	 * @param int $object_id An ID for what the uploaded file should relate to (e.g. group ID).
 	 * @return array
 	 */
-	public function bp_upload_file( $upload_dir_filter, $file, $object_id ) {
-		wp_mail( 'p@hmn.md', 'In bp_upload_file', 'hello world' );
-		$upload_file_path = parse_url( $file['tmp_name'], PHP_URL_PATH );
-		$upload_dir_info  = call_user_func( $upload_dir_filter, $object_id );
+	public function bp_upload_file( $upload_dir_filter, $file ) {
+		$file             = $file['file'];
+		$upload_dir_info  = call_user_func( $upload_dir_filter );
 
-		$upload_url = $this->get_files_service_hostname() . '/' . $this->get_upload_path();
+		// See https://github.com/wpcomvip/buddypress-core-test/issues/6
+		$get_upload_path = new ReflectionMethod( __CLASS__, 'get_upload_path' );
+		$get_upload_path->setAccessible( true );
+		$upload_url      = $this->get_files_service_hostname() . '/' . $get_upload_path->invoke( $this );
+
 		if ( is_multisite() ) {
 			$upload_url .= '/sites/' . bp_get_root_blog_id();
 		}
-		$upload_url .= $upload_dir_info['subdir'] . '/' . array_pop( $upload_file_path );
+		$upload_url .= $upload_dir_info['subdir'] . '/avatar.jpg';
 
-		wp_mail( 'p@hmn.md', 'Before upload_file', print_r( array(
+		wp_mail( 'p@hmn.md', 'Before upload_file ' . time(), print_r( array(
 			'file' => $file['tmp_name'],
-			'type' => wp_check_filetype( $new_file )['type'],
+			'type' => wp_check_filetype( $file['name'] )['type'],
 			'url'  => $upload_url,
 		), true ) );
 
 		$response = $this->upload_file( array(
 			'file' => $file['tmp_name'],
-			'type' => wp_check_filetype( $new_file )['type'],
+			'type' => wp_check_filetype( $file['name'] )['type'],
 			'url'  => $upload_url,
 		), 'editor_save' );
 
-		wp_mail( 'p@hmn.md', 'After upload_file', print_r( $response, true ) );
+		wp_mail( 'p@hmn.md', 'After upload_file ' . time(), print_r( $response, true ) );
 		return $response;
 	}
 }
