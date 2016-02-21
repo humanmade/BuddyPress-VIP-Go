@@ -12,8 +12,13 @@ add_action( 'bp_init', function() {
 	 */
 	add_filter( 'bp_core_avatar_folder_dir',    '__return_empty_string' );
 	add_filter( 'bp_core_fetch_avatar_no_grav', '__return_true' );
-	add_filter( 'bp_core_default_avatar_user',  'vipbp_change_avatar_urls', 10, 2 );
-	add_filter( 'bp_core_default_avatar_group', 'vipbp_change_avatar_urls', 10, 2 );
+	add_filter( 'bp_core_default_avatar_user',  'vipbp_change_user_avatar_urls', 10, 2 );
+	//add_filter( 'bp_core_default_avatar_group', 'vipbp_change_avatar_urls', 10, 2 );
+
+	/*
+	 * Tweaks for bp_core_avatar_handle_upload().
+	 */
+	add_filter( 'bp_core_pre_avatar_handle_upload', 'vipbp_handle_avatar_upload', 10, 3 );
 } );
 
 /**
@@ -27,13 +32,13 @@ add_action( 'bp_init', function() {
  * It's normally used to override the fallback image for Gravatar, but by duplicating some logic, we
  * use it to here to set a custom URL to support VIP Go FHS without any core changes to BuddyPress.
  *
- * @param string $_ Unused (URL to mystery-man.jpg fallback for Gravatar).
+ * @param string $_ Unused.
  * @param array $params Parameters for fetching the avatar.
  * @return string
  *
  * @todo GRAVATAR FALLBACK - =d or user meta?
  */
-function vipbp_change_avatar_urls( $_, $params ) {
+function vipbp_change_user_avatar_urls( $_, $params ) {
 	$bp = buddypress();
 
 	$folder_url = sprintf(
@@ -52,4 +57,38 @@ function vipbp_change_avatar_urls( $_, $params ) {
 	), $avatar_url );
 
 	return set_url_scheme( $avatar_url, $params['scheme'] );
+}
+
+/**
+ * ?
+ *
+ * @param string $_ Unused.
+ * @param array $file Appropriate entry from $_FILES superglobal.
+ * @param string $upload_dir_filter A filter we use to determine avatar type.
+ * @return false
+ */
+function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
+	if ( ! isset( $GLOBALS['VIPBP'] ) ) {
+		// @todo should this happen?
+		return $_;
+	}
+
+	$bp = buddypress();
+
+	if ( $upload_dir_filter === 'xprofile_avatar_upload_dir' ) {
+		$object_id = bp_get_displayed_user_id();
+
+	} elseif ( $upload_dir_filter === 'groups_avatar_upload_dir' ) {
+		$object_id = bp_get_current_group_id()();
+
+	} else {
+		// @todo Do something here?
+	}
+
+	// 1) Upload file.
+	$result = $GLOBALS['VIPBP']->bp_upload_file( $upload_dir_filter, $file, $object_id );
+
+
+	// Return false to shortcircuit bp_core_avatar_handle_upload().
+	return false;
 }
