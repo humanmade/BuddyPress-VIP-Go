@@ -68,11 +68,9 @@ function vipbp_change_user_avatar_urls( $_, $params ) {
  * @return false
  */
 function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
-	wp_mail( 'p@hmn.md', 'BP image debug', 'In vipbp_handle_avatar_upload' );
-
 	if ( ! isset( $GLOBALS['VIPBP'] ) ) {
 		// @todo should this happen?
-		wp_mail( 'p@hmn.md', 'BP image debug', 'Missing global.' );
+		wp_mail( 'p@hmn.md', 'BP image debug, missing global.', 'hello world' );
 		return $_;
 	}
 
@@ -89,6 +87,7 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 	}
 
 	// 1) Upload file.
+	wp_mail( 'p@hmn.md', 'In vipbp_handle_avatar_upload', 'hello world' );
 	$result = $GLOBALS['VIPBP']->bp_upload_file( $upload_dir_filter, $file, $object_id );
 	wp_mail( 'p@hmn.md', 'BP image debug', print_r( $result, true ) );
 	exit;

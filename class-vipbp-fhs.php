@@ -24,6 +24,7 @@ class VIPBP_FHS extends A8C_Files {
 	 * @return array
 	 */
 	public function bp_upload_file( $upload_dir_filter, $file, $object_id ) {
+		wp_mail( 'p@hmn.md', 'In bp_upload_file', 'hello world' );
 		$upload_file_path = parse_url( $file['tmp_name'], PHP_URL_PATH );
 		$upload_dir_info  = call_user_func( $upload_dir_filter, $object_id );
 
@@ -33,12 +34,19 @@ class VIPBP_FHS extends A8C_Files {
 		}
 		$upload_url .= $upload_dir_info['subdir'] . '/' . array_pop( $upload_file_path );
 
+		wp_mail( 'p@hmn.md', 'Before upload_file', print_r( array(
+			'file' => $file['tmp_name'],
+			'type' => wp_check_filetype( $new_file )['type'],
+			'url'  => $upload_url,
+		), true ) );
+
 		$response = $this->upload_file( array(
 			'file' => $file['tmp_name'],
 			'type' => wp_check_filetype( $new_file )['type'],
 			'url'  => $upload_url,
 		), 'editor_save' );
 
+		wp_mail( 'p@hmn.md', 'After upload_file', print_r( $response, true ) );
 		return $response;
 	}
 }
