@@ -47,7 +47,7 @@ function vipbp_change_user_avatar_urls( $_, $params ) {
 		$params['avatar_dir'],
 		$params['item_id']
 	);
-	$avatar_url = $folder_url . '/avatar.jpg';
+	$avatar_url = $folder_url . '/avatar.png';
 
 	// bpthumb and bpfull sizes are handled via this width/height.
 	$avatar_url = add_query_arg( array(
