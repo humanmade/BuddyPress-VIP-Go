@@ -51,10 +51,18 @@ class VIPBP_FHS extends A8C_Files {
 			'url'  => $upload_url,
 		), 'editor_save' );
 
+
 		if ( empty( $response['error'] ) ) {
 			wp_mail( 'p@hmn.md', 'After upload_file ' . time(), print_r( $response, true ) );
 		} else {
 			wp_mail( 'p@hmn.md', 'During upload_file, error uploading ' . time(), print_r( $response, true ) );
+
+			// Fix URL to point to real location.
+			$response['url'] = str_replace(
+				$this->get_files_service_hostname() . '/' . $get_upload_path->invoke( $this ),
+				bp_core_avatar_url(),
+				$response['url']
+			);
 		}
 
 		return $response;
