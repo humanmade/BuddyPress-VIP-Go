@@ -131,14 +131,14 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 	if ( ! isset( $GLOBALS['VIPBP'] ) ) {
 		// @todo should this happen?
 		wp_mail( 'p@hmn.md', 'BP image debug, missing global.', 'hello world' );
-		return $_;
+		return false;
 	}
 
 	$upload_dir_info                   = call_user_func( $upload_dir_filter );
 	list( , $avatar_type, $object_id ) = explode( '/', $upload_dir_info['subdir'] );
 
 	if ( ! get_user_by( 'ID', (int) $object_id ) ) {
-		return $_;
+		return false;
 	}
 
 
