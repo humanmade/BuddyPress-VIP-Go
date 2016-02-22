@@ -120,11 +120,11 @@ function vipbp_filter_avatar_urls( $params, $meta ) {
 }
 
 /**
- * ?
+ * Upload avatars to VIP Go FHS. Overrides default behaviour.
  *
  * @param string $_ Unused.
  * @param array $file Appropriate entry from $_FILES superglobal.
- * @param string $upload_dir_filter A filter we use to determine avatar type.
+ * @param string $upload_dir_filter Callable function to get uploaded avatar and upload directory info.
  * @return false
  */
 function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
@@ -134,10 +134,27 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 		return $_;
 	}
 
-	$bp = buddypress();
+	list( , $avatar_type, $object_id ) = explode( '/', $upload_dir_info['subdir'] );
+	$upload_dir_info                   = call_user_func( $upload_dir_filter );
 
-	// 1) Upload file.
+	if ( ! get_user_by( 'ID', (int) $object_id ) ) {
+		return $_;
+	}
+
+
+	// Upload file.
 	$result = $GLOBALS['VIPBP']->bp_upload_file( $upload_dir_filter, $file );
+
+	// Set placeholder meta for image crop.
+	if ( empty( $result['error'] ) ) {
+		update_user_meta( (int) $object_id, "vipbp-{$avatar_type}", array(
+			'crop_w'         => bp_core_avatar_full_width(),
+			'crop_h'         => bp_core_avatar_full_height(),
+			'crop_x'         => 0,
+			'crop_y'         => 0,
+			'original_width' => getimagesize( $file['file'] )[0],
+		) );
+	}
 
 	// Return false to shortcircuit bp_core_avatar_handle_upload().
 	return false;
