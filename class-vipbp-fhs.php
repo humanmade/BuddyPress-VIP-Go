@@ -18,14 +18,13 @@ class VIPBP_FHS extends A8C_Files {
 	/**
 	 * Upload any kind of BuddyPress avatar to the VIP Go FHS as a PNG image.
 	 *
-	 * @param string $upload_dir_filter A filter we use to determine avatar type.
+	 * @param array $upload_dir_info Info about uploaded avatar and upload directory.
 	 * @param string $file Appropriate entry from $_FILES superglobal.
-	 * @return array
+	 * @return array Upload results.
 	 */
-	public function bp_upload_file( $upload_dir_filter, $file ) {
+	public function bp_upload_file( $upload_dir_info, $file ) {
 		$file            = $file['file'];
 		$mime_type       = wp_check_filetype( $file['name'] )['type'];
-		$upload_dir_info = call_user_func( $upload_dir_filter );
 
 		// Convert image to a PNG for convenience.
 		self::convert_image_to_png( $file['tmp_name'], $mime_type );
@@ -52,7 +51,12 @@ class VIPBP_FHS extends A8C_Files {
 			'url'  => $upload_url,
 		), 'editor_save' );
 
-		wp_mail( 'p@hmn.md', 'After upload_file ' . time(), print_r( $response, true ) );
+		if ( empty( $response['error'] ) ) {
+			wp_mail( 'p@hmn.md', 'After upload_file ' . time(), print_r( $response, true ) );
+		} else {
+			wp_mail( 'p@hmn.md', 'During upload_file, error uploading ' . time(), print_r( $response, true ) );
+		}
+
 		return $response;
 	}
 
