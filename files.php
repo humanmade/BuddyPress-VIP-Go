@@ -134,6 +134,7 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 		return false;
 	}
 
+	$bp                                = buddypress();
 	$upload_dir_info                   = call_user_func( $upload_dir_filter );
 	list( , $avatar_type, $object_id ) = explode( '/', $upload_dir_info['subdir'] );
 
@@ -145,6 +146,11 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 	// Upload file.
 	$result = $GLOBALS['VIPBP']->bp_upload_file( $upload_dir_info, $file );
 
+	if ( ! empty( $result['error'] ) ) {
+		bp_core_add_message( sprintf( __( 'Upload failed! Error was: %s', 'buddypress' ), $result['error'] ), 'error' );
+		return false;
+	}
+
 	// Set placeholder meta for image crop.
 	update_user_meta( (int) $object_id, "vipbp-{$avatar_type}", array(
 		'crop_w'         => bp_core_avatar_full_width(),
@@ -154,6 +160,21 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 		'original_width' => getimagesize( $file['file'] )[0],
 		'ui_width'       => $bp->avatar_admin->ui_available_width ?: 0,
 	) );
+
+
+	// Re-implement globals and checks that BuddyPress normally does.
+	$bp->avatar_admin->image       = new stdClass();
+	$bp->avatar_admin->image->file = $result['url'];
+	$bp->avatar_admin->image->dir  = str_replace( bp_core_avatar_url(), '', $result['url'] );
+
+	if ( BP_Attachment_Avatar::is_too_small( $bp->avatar_admin->image->file ) ) {
+		bp_core_add_message(
+			sprintf( __( 'You have selected an image that is smaller than recommended. For best results, upload a picture larger than %d x %d pixels.', 'buddypress' ),
+				bp_core_avatar_full_width(),
+				bp_core_avatar_full_height()
+			),
+			'error'
+		);
 	}
 
 	// Return false to shortcircuit bp_core_avatar_handle_upload().
