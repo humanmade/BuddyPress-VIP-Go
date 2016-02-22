@@ -23,11 +23,11 @@ class VIPBP_FHS extends A8C_Files {
 	 * @return array Upload results.
 	 */
 	public function bp_upload_file( $upload_dir_info, $file ) {
-		$file            = $file['file'];
-		$mime_type       = wp_check_filetype( $file['name'] )['type'];
+		$file = $file['file'];
 
 		// Convert image to a PNG for convenience.
-		self::convert_image_to_png( $file['tmp_name'], $mime_type );
+		self::convert_image_to_png( $file['tmp_name'], wp_check_filetype( $file['name'] )['type'] );
+		$mime_type = 'image/png';
 
 		// See https://github.com/wpcomvip/buddypress-core-test/issues/6
 		$get_upload_path = new ReflectionMethod( __CLASS__, 'get_upload_path' );
