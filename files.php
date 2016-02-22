@@ -86,7 +86,7 @@ function vipbp_filter_avatar_urls( $params, $meta ) {
 
 	$avatar_args = array(
 		// Maybe clamp image width if original is too wide to match normal BP behaviour.
-		'w'      => bp_core_avatar_original_max_width(),
+		'w'      => $meta['ui_width'] ?: bp_core_avatar_original_max_width(),
 
 		// Crop avatar.
 		'crop'   => sprintf( '%dpx,%dpx,%dpx,%dpx',
@@ -146,14 +146,14 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 	$result = $GLOBALS['VIPBP']->bp_upload_file( $upload_dir_info, $file );
 
 	// Set placeholder meta for image crop.
-	if ( empty( $result['error'] ) ) {
-		update_user_meta( (int) $object_id, "vipbp-{$avatar_type}", array(
-			'crop_w'         => bp_core_avatar_full_width(),
-			'crop_h'         => bp_core_avatar_full_height(),
-			'crop_x'         => 0,
-			'crop_y'         => 0,
-			'original_width' => getimagesize( $file['file'] )[0],
-		) );
+	update_user_meta( (int) $object_id, "vipbp-{$avatar_type}", array(
+		'crop_w'         => bp_core_avatar_full_width(),
+		'crop_h'         => bp_core_avatar_full_height(),
+		'crop_x'         => 0,
+		'crop_y'         => 0,
+		'original_width' => getimagesize( $file['file'] )[0],
+		'ui_width'       => $bp->avatar_admin->ui_available_width ?: 0,
+	) );
 	}
 
 	// Return false to shortcircuit bp_core_avatar_handle_upload().
