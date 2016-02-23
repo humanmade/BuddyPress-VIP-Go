@@ -19,6 +19,7 @@ add_action( 'bp_init', function() {
 	 * Tweaks for uploading user and group avatars -- bp_core_avatar_handle_upload().
 	 */
 	add_filter( 'bp_core_pre_avatar_handle_upload', 'vipbp_handle_avatar_upload', 10, 3 );
+	add_filter( 'bp_avatar_pre_handle_capture',     'vipbp_handle_avatar_capture', 10, 3 );
 
 	/*
 	 * Tweaks for cropping user and group avatars -- bp_core_avatar_handle_crop().
@@ -184,6 +185,56 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 }
 
 /**
+ * Upload webcam user avatars to VIP Go FHS. Overrides default behaviour.
+ *
+ * Permission checks are made upstream in bp_avatar_ajax_set().
+ *
+ * @param string $_       Unused.
+ * @param string $data    Base64 encoded image.
+ * @param int    $item_id Item to associate.
+ * @return false Shortcircuits bp_avatar_handle_capture().
+ */
+function vipbp_handle_avatar_capture( $_, $data, $item_id ) {
+	$avatar_folder_dir = apply_filters(
+		'bp_core_avatar_folder_dir',
+		bp_core_avatar_upload_path() . '/avatars/' . $item_id,
+		$item_id,
+		'user',
+		'avatars'
+	);
+
+	// Save bytestream to disk.
+	$tmp_name = wp_tempnam();
+	file_put_contents( $tmp_name, $data );
+
+	// Figure out the MIME type.
+	$finfo     = finfo_open( FILEINFO_MIME_TYPE );
+	$mime_type = finfo_file( $finfo, $tmp_name );
+	finfo_close( $finfo );
+
+	// Fake it as if it were a $_FILES array.
+	$file = array(
+		'file' => array(
+			'name'     => basename( $tmp_name ),
+			'tmp_name' => $tmp_name,
+			'type'     => $mime_type,
+			'size'     => filesize( $mime_type ),
+		),
+	);
+
+	// Upload the avatar.
+	bp_core_avatar_handle_upload( $file, 'xprofile_avatar_upload_dir' );
+
+	// And crop it.
+	bp_core_avatar_handle_crop( array(
+		'item_id'       => $item_id,
+		'original_file' => $tmp_name,
+	) );
+
+	return false;
+}
+
+/**
  * Handle avatar crops on the VIP Go environment.
  *
  * Instead of creating a new image, we store the cropping coordinates and later let the
@@ -213,10 +264,10 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
  */
 function vipbp_handle_avatar_crop( $_, $args ) {
 	$cropping_meta = array(
-		'crop_w'         => (int) $args['crop_w'],
-		'crop_h'         => (int) $args['crop_h'],
-		'crop_x'         => (int) $args['crop_x'],
-		'crop_y'         => (int) $args['crop_y'],
+		'crop_w' => (int) $args['crop_w'],
+		'crop_h' => (int) $args['crop_h'],
+		'crop_x' => (int) $args['crop_x'],
+		'crop_y' => (int) $args['crop_y'],
 	);
 
 	if ( $args['object'] === 'user' ) {
