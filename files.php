@@ -140,10 +140,6 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 	$upload_dir_info                   = call_user_func( $upload_dir_filter );
 	list( , $avatar_type, $object_id ) = explode( '/', $upload_dir_info['subdir'] );
 
-	if ( ! get_user_by( 'ID', (int) $object_id ) ) {
-		return false;
-	}
-
 
 	// Upload file.
 	$result = $GLOBALS['VIPBP']->bp_upload_file( $upload_dir_info, $file );
