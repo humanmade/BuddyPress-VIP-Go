@@ -8,7 +8,7 @@ defined( 'ABSPATH' ) || exit;
 
 add_action( 'bp_init', function() {
 	/*
-	 * Tweaks for bp_core_fetch_avatar().
+	 * Tweaks for fetching avatars -- bp_core_fetch_avatar().
 	 */
 	add_filter( 'bp_core_avatar_folder_dir',    '__return_empty_string' );
 	add_filter( 'bp_core_fetch_avatar_no_grav', '__return_true' );
@@ -16,7 +16,7 @@ add_action( 'bp_init', function() {
 	add_filter( 'bp_core_default_avatar_group', 'vipbp_filter_group_avatar_urls', 10, 2 );
 
 	/*
-	 * Tweaks for bp_core_avatar_handle_upload().
+	 * Tweaks for uploading user and group avatars -- bp_core_avatar_handle_upload().
 	 */
 	add_filter( 'bp_core_pre_avatar_handle_upload', 'vipbp_handle_avatar_upload', 10, 3 );
 } );
@@ -122,10 +122,12 @@ function vipbp_filter_avatar_urls( $params, $meta ) {
 /**
  * Upload avatars to VIP Go FHS. Overrides default behaviour.
  *
+ * Permission checks are made upstream in xprofile_screen_change_avatar().
+ *
  * @param string $_ Unused.
  * @param array $file Appropriate entry from $_FILES superglobal.
  * @param string $upload_dir_filter Callable function to get uploaded avatar and upload directory info.
- * @return false
+ * @return false Shortcircuits bp_core_avatar_handle_upload().
  */
 function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 	if ( ! isset( $GLOBALS['VIPBP'] ) ) {
