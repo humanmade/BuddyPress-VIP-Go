@@ -85,10 +85,62 @@ function vipbp_filter_group_avatar_urls( $_, $params ) {
  * @todo GRAVATAR - if $meta doesn't exist, use gravatar?
  */
 function vipbp_filter_avatar_urls( $params, $meta ) {
+	$bp = buddypress();
+
+
+	/**
+	 * If no meta exists, object does not have an avatar.
+	 */
+
 	if ( ! $meta ) {
-		//temp
-		return bp_core_avatar_default( 'local' );
+
+		// Gravatar type.
+		if ( empty( $bp->grav_default->{$params['object']} ) ) {
+			$default_grav = 'wavatar';
+		} else {
+			$default_grav = $bp->grav_default->{$params['object']};
+		}
+
+		// Check email address is set.
+		if ( empty( $params['email'] ) ) {
+			if ( $params['object'] === 'user' ) {
+				$params['email'] = bp_core_get_user_email( $params['item_id'] );
+			} elseif ( $params['object'] === 'group' || $params['object'] === 'blog' ) {
+				$params['email'] = $params['item_id'] . '-' . $params['object'] . '@' . bp_get_root_domain();
+			}
+		}
+
+		$params['email']  = apply_filters( 'bp_core_gravatar_email', $params['email'], $params['item_id'], $params['object'] );
+		$gravatar         = apply_filters( 'bp_gravatar_url', '//www.gravatar.com/avatar/' );
+		$gravatar        .=  md5( strtolower( $params['email'] ) );
+
+		$gravatar_args = array(
+			's' => $params['width']
+		);
+
+		if ( ! empty( $params['force_default'] ) ) {
+			$gravatar_args['f'] = 'y';
+		}
+
+		if ( ! empty( $params['rating'] ) ) {
+			$gravatar_args['r'] = strtolower( $params['rating'] );
+		}
+
+		// Only set default image if 'Gravatar Logo' is not requested.
+		if ( $default_grav !== 'gravatar_default' ) {
+			$gravatar_args['d'] = $default_grav;
+		}
+
+		return esc_url( add_query_arg(
+			rawurlencode_deep( array_filter( $gravatar_args ) ),
+			$gravatar
+		) );
 	}
+
+
+	/**
+	 * Object has an uploaded avatar.
+	 */
 
 	$avatar_args = array(
 		// Maybe clamp image width if original is too wide to match normal BP behaviour.
