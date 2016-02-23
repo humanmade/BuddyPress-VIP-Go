@@ -19,6 +19,11 @@ add_action( 'bp_init', function() {
 	 * Tweaks for uploading user and group avatars -- bp_core_avatar_handle_upload().
 	 */
 	add_filter( 'bp_core_pre_avatar_handle_upload', 'vipbp_handle_avatar_upload', 10, 3 );
+
+	/*
+	 * Tweaks for cropping user and group avatars -- bp_core_avatar_handle_crop().
+	 */
+	add_filter( 'bp_core_pre_avatar_handle_crop', 'vipbp_handle_avatar_crop', 10, 2 );
 } );
 
 /**
@@ -175,6 +180,55 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 		);
 	}
 
-	// Return false to shortcircuit bp_core_avatar_handle_upload().
+	return false;
+}
+
+/**
+ * Handle avatar crops on the VIP Go environment.
+ *
+ * Instead of creating a new image, we store the cropping coordinates and later let the
+ * Files Service dynamically crop the image on-demand via Photon-like query parameters.
+ *
+ * Permission checks are made upstream in xprofile_screen_change_avatar().
+ *
+ * @param string $_ Unused.
+ * @param array|string $args {
+ *     Array of function parameters.
+ *
+ *     @type string      $object        Object type of the item whose avatar you're
+ *                                      handling. 'user', 'group', 'blog', or custom.
+ *                                      Default: 'user'.
+ *     @type string      $avatar_dir    Subdirectory where avatar should be stored.
+ *                                      Default: 'avatars'.
+ *     @type bool|int    $item_id       ID of the item that the avatar belongs to.
+ *     @type bool|string $original_file Relative path to the original avatar file.
+ *     @type int         $crop_w        Crop width. Default: the global 'full' avatar width,
+ *                                      as retrieved by bp_core_avatar_full_width().
+ *     @type int         $crop_h        Crop height. Default: the global 'full' avatar height,
+ *                                      as retrieved by bp_core_avatar_full_height().
+ *     @type int         $crop_x        The horizontal starting point of the crop. Default: 0.
+ *     @type int         $crop_y        The vertical starting point of the crop. Default: 0.
+ * }
+ * @return false Shortcircuits bp_core_avatar_handle_crop().
+ */
+function vipbp_handle_avatar_crop( $_, $args ) {
+	$cropping_meta = array(
+		'crop_w'         => (int) $args['crop_w'],
+		'crop_h'         => (int) $args['crop_h'],
+		'crop_x'         => (int) $args['crop_x'],
+		'crop_y'         => (int) $args['crop_y'],
+	);
+
+	if ( $args['object'] === 'user' ) {
+		$meta = get_user_meta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'], true );
+		$meta = wp_parse_args( $cropping_meta, $meta );
+		update_user_meta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'], $meta );
+
+	} elseif ( $args['object'] === 'group' ) {
+		$meta = groups_get_groupmeta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'], true );
+		$meta = wp_parse_args( $cropping_meta, $meta );
+		groups_update_groupmeta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'], $meta );	
+	}
+
 	return false;
 }
