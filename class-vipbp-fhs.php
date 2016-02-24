@@ -86,7 +86,7 @@ class VIPBP_FHS extends A8C_Files {
 		$ch = curl_init(
 			$this->get_files_service_hostname() . '/' .
 			$get_upload_path->invoke( $this ) .
-			"/{$avatar_dir}/{$item_id}/avatar.png";
+			"/{$avatar_dir}/{$item_id}/avatar.png"
 		);
 
 		curl_setopt( $ch, CURLOPT_CUSTOMREQUEST, 'DELETE' );
