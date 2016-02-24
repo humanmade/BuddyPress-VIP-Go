@@ -33,11 +33,9 @@ class VIPBP_FHS extends A8C_Files {
 		$get_upload_path = new ReflectionMethod( __CLASS__, 'get_upload_path' );
 		$get_upload_path->setAccessible( true );
 
-		$upload_url = $this->get_files_service_hostname() . '/' . $get_upload_path->invoke( $this );
-		if ( is_multisite() ) {
-			$upload_url .= '/sites/' . bp_get_root_blog_id();
-		}
-		$upload_url .= $upload_dir_info['subdir'] . '/avatar.png';
+		$upload_url = $this->get_files_service_hostname() . '/' .
+			            $get_upload_path->invoke( $this ) .
+			            $upload_dir_info['subdir'] . '/avatar.png';
 
 		wp_mail( 'p@hmn.md', 'Before upload_file ' . time(), print_r( array(
 			'file' => $file['tmp_name'],
