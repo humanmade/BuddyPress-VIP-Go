@@ -145,8 +145,8 @@ function vipbp_filter_avatar_urls( $params, $meta ) {
 	 */
 
 	$avatar_args = array(
-		// Maybe clamp image width if original is too wide to match normal BP behaviour.
-		'w'      => $meta['ui_width'] ?: bp_core_avatar_original_max_width(),
+		// Maybe clamp image width if it was uploaded on mobile.
+		'w'      => $meta['ui_width'],
 
 		// Crop avatar.
 		'crop'   => sprintf( '%dpx,%dpx,%dpx,%dpx',
@@ -163,8 +163,8 @@ function vipbp_filter_avatar_urls( $params, $meta ) {
 		'strip'  => 'info',
 	);
 
-	// Only clamp image width if uploaded original was too wide.
-	if ( $meta['original_width'] <= bp_core_avatar_original_max_width() ) {
+	// Only clamp image width if it was uploaded on mobile.
+	if ( ! $avatar_args['w'] ) {
 		unset( $avatar_args['w'] );
 	}
 
@@ -219,7 +219,7 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 		'ui_width'       => $bp->avatar_admin->ui_available_width ?: 0,
 	) );
 
-	// Make image fit cropper width; does not cause image to upscale.
+	// Make sure image fits cropper; does not cause image to upscale.
 	$result['url'] = add_query_arg(
 		'w',
 		$bp->avatar_admin->ui_available_width ?: bp_core_avatar_original_max_width(),
