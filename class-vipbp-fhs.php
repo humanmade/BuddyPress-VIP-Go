@@ -52,11 +52,10 @@ class VIPBP_FHS extends A8C_Files {
 		), 'editor_save' );
 
 
-		if ( empty( $response['error'] ) ) {
-			wp_mail( 'p@hmn.md', 'After upload_file ' . time(), print_r( $response, true ) );
-		} else {
+		if ( ! empty( $response['error'] ) ) {
 			wp_mail( 'p@hmn.md', 'During upload_file, error uploading ' . time(), print_r( $response, true ) );
 
+		} else {
 			// Fix URL to point to real location.
 			$response['url'] = str_replace(
 				$this->get_files_service_hostname() . '/' . $get_upload_path->invoke( $this ),
@@ -65,6 +64,7 @@ class VIPBP_FHS extends A8C_Files {
 			);
 		}
 
+		wp_mail( 'p@hmn.md', 'After upload_file ' . time(), print_r( $response, true ) );
 		return $response;
 	}
 
