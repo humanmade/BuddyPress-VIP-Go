@@ -226,6 +226,9 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 		$result['url']
 	);
 
+	wp_mail( 'p@hmn.md', 'BP ui width.', print_r( array($bp->avatar_admin->ui_available_width, bp_core_avatar_original_max_width() ), true ) );	
+	$bp->avatar_admin->ui_available_width ?: bp_core_avatar_original_max_width(),
+
 	// Re-implement globals and checks that BuddyPress normally does.
 	$bp->avatar_admin->image       = new stdClass();
 	$bp->avatar_admin->image->dir  = str_replace( bp_core_avatar_url(), '', $result['url'] );
