@@ -222,8 +222,9 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 
 	// Re-implement globals and checks that BuddyPress normally does.
 	$bp->avatar_admin->image       = new stdClass();
-	$bp->avatar_admin->image->file = $result['url'];
 	$bp->avatar_admin->image->dir  = str_replace( bp_core_avatar_url(), '', $result['url'] );
+	$bp->avatar_admin->image->file = $result['url'];
+	$bp->avatar_admin->image->url  = $result['url'];
 
 	if ( BP_Attachment_Avatar::is_too_small( $bp->avatar_admin->image->file ) ) {
 		bp_core_add_message(
