@@ -21,6 +21,8 @@ class VIPBP_FHS extends A8C_Files {
 	 * @param array $upload_dir_info Info about uploaded avatar and upload directory.
 	 * @param string $file Appropriate entry from $_FILES superglobal.
 	 * @return array Upload results.
+	 *
+	 * @todo REVIEW TO SUPPORT MULTINETWORK ACTIVATION.
 	 */
 	public function bp_upload_file( $upload_dir_info, $file ) {
 		$file = $file['file'];
@@ -64,6 +66,62 @@ class VIPBP_FHS extends A8C_Files {
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Delete an avatar from the VIP Go FHS, and purge from caches.
+	 *
+	 * Based on `A8C_Files->delete_file()`.
+	 *
+	 * @param bool|string $avatar_dir Subdirectory where avatar is located.
+	 *                                Default: false, which falls back on the default location
+	 *                                corresponding to the $object.
+	 * @param int         $item_id    ID of the item whose avatar you're deleting.
+	 */
+	public function bp_delete_file( $avatar_dir, $item_id ) {
+		// See https://github.com/wpcomvip/buddypress-core-test/issues/6
+		$get_upload_path = new ReflectionMethod( __CLASS__, 'get_upload_path' );
+		$get_upload_path->setAccessible( true );
+
+		$ch = curl_init(
+			$this->get_files_service_hostname() . '/' .
+			$get_upload_path->invoke( $this ) .
+			"/{$avatar_dir}/{$item_id}/avatar.png";
+		);
+
+		curl_setopt( $ch, CURLOPT_CUSTOMREQUEST, 'DELETE' );
+		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+		curl_setopt( $ch, CURLOPT_HEADER, false );
+		curl_setopt( $ch, CURLOPT_TIMEOUT, 10 );
+		curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, 0 );
+		curl_setopt( $ch, CURLOPT_HTTPHEADER, array(
+			'X-Client-Site-ID: ' . constant( 'FILES_CLIENT_SITE_ID' ),
+			'X-Access-Token: ' . constant( 'FILES_ACCESS_TOKEN' ),
+		) );
+
+		curl_exec( $ch );
+		$http_code = (int) curl_getinfo( $ch, CURLINFO_HTTP_CODE );
+		curl_close( $ch );
+
+		if ( $http_code !== 200 ) {
+			error_log( sprintf( 'Error deleting the BuddyPress file from the remote servers: Code %d', $http_code ) );
+			return;
+		}
+
+		wp_mail( 'p@hmn.md', 'After delete_file ' . time(), print_r( array(
+			$http_code,
+			$this->get_files_service_hostname() . '/' . $get_upload_path->invoke( $this ) .	"/{$avatar_dir}/{$item_id}/avatar.png"
+		), true ) );
+
+		// See https://github.com/wpcomvip/buddypress-core-test/issues/6
+		$purge_file_cache = new ReflectionMethod( __CLASS_, 'purge_file_cache' );
+		$purge_file_cache->setAccessible( true );
+
+		$purge_file_cache->invoke(
+			$this,
+			get_site_url() . '/' . $get_upload_path->invoke( $this ) . "/{$avatar_dir}/{$item_id}/avatar.png",
+			'PURGE'
+		);
 	}
 
 	/**

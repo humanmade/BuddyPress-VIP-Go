@@ -25,6 +25,11 @@ add_action( 'bp_init', function() {
 	 * Tweaks for cropping user and group avatars -- bp_core_avatar_handle_crop().
 	 */
 	add_filter( 'bp_core_pre_avatar_handle_crop', 'vipbp_handle_avatar_crop', 10, 2 );
+
+	/*
+	 * Tweaks for deleting avatars -- bp_core_delete_existing_avatar().
+	 */
+	add_filter( 'bp_core_pre_delete_existing_avatar', 'vipbp_delete_existing_avatar', 10, 2 );
 } );
 
 /**
@@ -80,9 +85,6 @@ function vipbp_filter_group_avatar_urls( $_, $params ) {
  * @param array $params Parameters for fetching the avatar.
  * @param array $meta Image meta for cropping.
  * @return string Avatar URL.
- *
- * @todo GRAVATAR FALLBACK - =d or user meta?
- * @todo GRAVATAR - if $meta doesn't exist, use gravatar?
  */
 function vipbp_filter_avatar_urls( $params, $meta ) {
 	$bp = buddypress();
@@ -333,5 +335,68 @@ function vipbp_handle_avatar_crop( $_, $args ) {
 		groups_update_groupmeta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'], $meta );	
 	}
 
+	return false;
+}
+
+/**
+ * Handle deleting avatars on the VIP Go environment.
+ *
+ * Permission checks are made upstream in several screen handling functions.
+ *
+ * @param string $_ Unused.
+ * @param array|string $args {
+ *     Array of function parameters.
+ *
+ *     @type bool|int    $item_id    ID of the item whose avatar you're deleting.
+ *                                   Defaults to the current item of type $object.
+ *     @type string      $object     Object type of the item whose avatar you're
+ *                                   deleting. 'user', 'group', 'blog', or custom.
+ *                                   Default: 'user'.
+ *     @type bool|string $avatar_dir Subdirectory where avatar is located.
+ *                                   Default: false, which falls back on the default location
+ *                                   corresponding to the $object.
+ * }
+ * @return false Shortcircuits bp_core_delete_existing_avatar().
+ */
+function vipbp_delete_existing_avatar( $_, $args ) {
+	if ( ! isset( $GLOBALS['VIPBP'] ) ) {
+		// @todo should this happen?
+		wp_mail( 'p@hmn.md', 'BP image delete, missing global.', 'hello world' );
+		return false;
+	}
+
+	if ( empty( $args['avatar_dir'] ) ) {
+		if ( $args['object'] === 'user' ) {
+			$args['avatar_dir'] = 'avatars';
+		} elseif ( $args['object'] === 'group' ) {
+			$args['avatar_dir'] = 'group-avatars';
+		} elseif ( $args['object'] === 'blog' ) {
+			$args['avatar_dir'] = 'blog-avatars';
+		}
+
+		$args['avatar_dir'] = apply_filters( 'bp_core_avatar_dir', $args['avatar_dir'], $args['object'] );
+		if ( ! $args['avatar_dir'] ) {
+			return false;
+		}
+	}
+
+	if ( empty( $args['item_id'] ) ) {
+		if ( $args['object'] === 'user' ) {
+			$args['item_id'] = bp_displayed_user_id();
+		} elseif ( $args['object'] === 'group' ) {
+			$args['item_id'] = buddypress()->groups->current_group->id;
+		} elseif ( $args['object'] === 'blog' ) {
+			$args['item_id'] = $current_blog->id;
+		}
+
+		$args['item_id'] = apply_filters( 'bp_core_avatar_item_id', $args['item_id'], $args['object'] );
+		if ( ! $args['item_id'] ) {
+			return false;
+		}
+	}
+
+	$GLOBALS['VIPBP']->bp_delete_file( $args['avatar_dir'], $args['item_id'] );
+
+	do_action( 'bp_core_delete_existing_avatar', $args );
 	return false;
 }
