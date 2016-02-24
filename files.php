@@ -169,7 +169,7 @@ function vipbp_filter_avatar_urls( $params, $meta ) {
 	}
 
 	// Add crop and resizing parameters to the avatar URL.
-	$avatar_url = add_query_arg( $avatar_args, sprintf(
+	$avatar_url = add_query_arg( urlencode_deep( $avatar_args ), sprintf(
 		'%s/%s/%d',
 		bp_core_avatar_url(),
 		$params['avatar_dir'],
