@@ -219,6 +219,12 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 		'ui_width'       => $bp->avatar_admin->ui_available_width ?: 0,
 	) );
 
+	// Make image fit cropper width; does not cause image to upscale.
+	$result['url'] = add_query_arg(
+		'w',
+		$bp->avatar_admin->ui_available_width ?: bp_core_avatar_original_max_width(),
+		$result['url']
+	);
 
 	// Re-implement globals and checks that BuddyPress normally does.
 	$bp->avatar_admin->image       = new stdClass();
