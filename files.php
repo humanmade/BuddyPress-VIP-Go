@@ -197,8 +197,14 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 	}
 
 	$bp                                = buddypress();
+	$crop_image_width                  = bp_core_avatar_original_max_width();
+	$crop_ui_available_width           = 0;
 	$upload_dir_info                   = call_user_func( $upload_dir_filter );
 	list( , $avatar_type, $object_id ) = explode( '/', $upload_dir_info['subdir'] );
+
+	if ( isset( $bp->avatar_admin->ui_available_width ) ) {
+		$crop_ui_available_width = $bp->avatar_admin->ui_available_width;
+	}
 
 
 	// Upload file.
@@ -209,6 +215,21 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 		return false;
 	}
 
+
+	// Make sure image will fit cropper.
+	if ( $crop_ui_available_width < $crop_image_width ) {
+
+		// $crop_image_width has to be larger than the "bpfull" image size.
+		if ( $crop_image_width < bp_core_avatar_full_width() ) {
+			$crop_image_width = bp_core_avatar_full_width();
+		} else {
+			$crop_image_width = $crop_ui_available_width;
+		}
+	}
+
+	$result['url'] = add_query_arg( 'w', $crop_image_width, $result['url'] );  // Does not upscale.
+
+
 	// Set placeholder meta for image crop.
 	update_user_meta( (int) $object_id, "vipbp-{$avatar_type}", array(
 		'crop_w'         => bp_core_avatar_full_width(),
@@ -216,17 +237,9 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 		'crop_x'         => 0,
 		'crop_y'         => 0,
 		'original_width' => getimagesize( $file['file'] )[0],
-		'ui_width'       => $bp->avatar_admin->ui_available_width ?: 0,
+		'ui_width'       => $crop_image_width,
 	) );
 
-	// Make sure image fits cropper; does not cause image to upscale.
-	$result['url'] = add_query_arg(
-		'w',
-		$bp->avatar_admin->ui_available_width ?: bp_core_avatar_original_max_width(),
-		$result['url']
-	);
-
-	wp_mail( 'p@hmn.md', 'BP ui width.', print_r( array($bp->avatar_admin->ui_available_width, bp_core_avatar_original_max_width() ), true ) );	
 
 	// Re-implement globals and checks that BuddyPress normally does.
 	$bp->avatar_admin->image       = new stdClass();
