@@ -236,7 +236,7 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 		'crop_h'         => bp_core_avatar_full_height(),
 		'crop_x'         => 0,
 		'crop_y'         => 0,
-		'original_width' => getimagesize( $file['file'] )[0],
+		'original_width' => getimagesize( $file['file']['tmp_name'] )[0],
 		'ui_width'       => $crop_image_width,
 	) );
 
