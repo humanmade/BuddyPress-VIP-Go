@@ -357,6 +357,7 @@ function vipbp_handle_avatar_crop( $_, $args ) {
 		groups_update_groupmeta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'], $meta );	
 	}
 
+	wp_mail( 'p@hmn.md', 'avatar cropping meta ' . time(), print_r( $meta, true ) );
 	return false;
 }
 
