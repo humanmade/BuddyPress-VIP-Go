@@ -404,8 +404,6 @@ function vipbp_delete_existing_avatar( $_, $args ) {
 			$args['avatar_dir'] = 'avatars';
 		} elseif ( $args['object'] === 'group' ) {
 			$args['avatar_dir'] = 'group-avatars';
-		} elseif ( $args['object'] === 'blog' ) {
-			$args['avatar_dir'] = 'blog-avatars';
 		}
 
 		$args['avatar_dir'] = apply_filters( 'bp_core_avatar_dir', $args['avatar_dir'], $args['object'] );
@@ -419,8 +417,6 @@ function vipbp_delete_existing_avatar( $_, $args ) {
 			$args['item_id'] = bp_displayed_user_id();
 		} elseif ( $args['object'] === 'group' ) {
 			$args['item_id'] = buddypress()->groups->current_group->id;
-		} elseif ( $args['object'] === 'blog' ) {
-			// Blog avatars aren't fully implemented in BuddyPress.
 		}
 
 		$args['item_id'] = apply_filters( 'bp_core_avatar_item_id', $args['item_id'], $args['object'] );
@@ -437,8 +433,6 @@ function vipbp_delete_existing_avatar( $_, $args ) {
 		delete_user_meta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'] );
 	} elseif ( $args['object'] === 'group' ) {
 		groups_delete_groupmeta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'] );	
-	} elseif ( $args['object'] === 'blog' ) {
-		// Blog avatars aren't fully implemented in BuddyPress.
 	}
 
 	do_action( 'bp_core_delete_existing_avatar', $args );
