@@ -51,7 +51,6 @@ class VIPBP_FHS extends A8C_Files {
 			'url'  => $upload_url,
 		), 'editor_save' );
 
-
 		if ( ! empty( $response['error'] ) ) {
 			wp_mail( 'p@hmn.md', 'During upload_file, error uploading ' . time(), print_r( $response, true ) );
 
@@ -63,6 +62,16 @@ class VIPBP_FHS extends A8C_Files {
 				$response['url']
 			);
 		}
+
+		/*
+		 * After upload, flush the cache. This will fix problems with re-use of the same filename
+		 * for future avatar changes.
+		 *
+		 * See https://github.com/wpcomvip/buddypress-core-test/issues/6
+		 */
+		$purge_file_cache = new ReflectionMethod( __CLASS_, 'purge_file_cache' );
+		$purge_file_cache->setAccessible( true );
+		$purge_file_cache->invoke( $this, $response['url'], 'PURGE' );
 
 		wp_mail( 'p@hmn.md', 'After upload_file ' . time(), print_r( $response, true ) );
 		return $response;
@@ -116,7 +125,6 @@ class VIPBP_FHS extends A8C_Files {
 		// See https://github.com/wpcomvip/buddypress-core-test/issues/6
 		$purge_file_cache = new ReflectionMethod( __CLASS_, 'purge_file_cache' );
 		$purge_file_cache->setAccessible( true );
-
 		$purge_file_cache->invoke(
 			$this,
 			get_site_url() . '/' . $get_upload_path->invoke( $this ) . "/{$avatar_dir}/{$item_id}/avatar.png",
