@@ -407,10 +407,14 @@ function vipbp_delete_existing_avatar( $_, $args ) {
 	if ( empty( $args['item_id'] ) ) {
 		if ( $args['object'] === 'user' ) {
 			$args['item_id'] = bp_displayed_user_id();
+			delete_user_meta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'] );
+
 		} elseif ( $args['object'] === 'group' ) {
 			$args['item_id'] = buddypress()->groups->current_group->id;
+			groups_delete_groupmeta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'] );	
+
 		} elseif ( $args['object'] === 'blog' ) {
-			$args['item_id'] = $current_blog->id;
+			// Blog avatars aren't fully implemented in BuddyPress.
 		}
 
 		$args['item_id'] = apply_filters( 'bp_core_avatar_item_id', $args['item_id'], $args['object'] );
