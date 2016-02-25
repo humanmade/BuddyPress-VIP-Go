@@ -176,9 +176,7 @@ function vipbp_filter_avatar_urls( $params, $meta ) {
 		$params['item_id']
 	) . '/avatar.png' );
 
-	// !!! Temporary hack !!!
-	$avatar_url = "//i1.wp.com/" . preg_replace( '#^https?://#i', '', $avatar_url );
-
+	$avatar_url = apply_filters( 'vipbp_filter_avatar_urls', $avatar_url, $params, $meta );
 	return set_url_scheme( $avatar_url, $params['scheme'] );
 }
 
