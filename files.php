@@ -232,13 +232,24 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 
 
 	// Set placeholder meta for image crop.
-	update_user_meta( (int) $object_id, "vipbp-{$avatar_type}", array(
-		'crop_w'   => bp_core_avatar_full_width(),
-		'crop_h'   => bp_core_avatar_full_height(),
-		'crop_x'   => 0,
-		'crop_y'   => 0,
-		'ui_width' => $crop_image_width,
-	) );
+	if ( $upload_dir_filter === 'xprofile_avatar_upload_dir' ) {
+		update_user_meta( (int) $object_id, "vipbp-{$avatar_type}", array(
+			'crop_w'   => bp_core_avatar_full_width(),
+			'crop_h'   => bp_core_avatar_full_height(),
+			'crop_x'   => 0,
+			'crop_y'   => 0,
+			'ui_width' => $crop_image_width,
+		) );
+
+	} elseif ( $upload_dir_filter === 'groups_avatar_upload_dir' ) {
+		groups_update_groupmeta( (int) $object_id, "vipbp-{$avatar_type}", array(
+			'crop_w'   => bp_core_avatar_full_width(),
+			'crop_h'   => bp_core_avatar_full_height(),
+			'crop_x'   => 0,
+			'crop_y'   => 0,
+			'ui_width' => $crop_image_width,
+		) );
+	}
 
 
 	// Re-implement globals and checks that BuddyPress normally does.
