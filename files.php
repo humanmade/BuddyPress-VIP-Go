@@ -50,7 +50,7 @@ add_action( 'bp_init', function() {
 function vipbp_filter_user_avatar_urls( $_, $params ) {
 	return vipbp_filter_avatar_urls(
 		$params,
-		get_user_meta( bp_displayed_user_id(), 'vipbp-avatars', true ) ?: array()
+		get_user_meta( $params['item_id'], 'vipbp-avatars', true ) ?: array()
 	);
 }
 
@@ -72,7 +72,7 @@ function vipbp_filter_user_avatar_urls( $_, $params ) {
 function vipbp_filter_group_avatar_urls( $_, $params ) {
 	return vipbp_filter_avatar_urls(
 		$params,
-		groups_get_groupmeta( bp_get_current_group_id(), 'vipbp-group-avatars', true ) ?: array()
+		groups_get_groupmeta( $params['item_id'], 'vipbp-group-avatars', true ) ?: array()
 	);
 }
 
