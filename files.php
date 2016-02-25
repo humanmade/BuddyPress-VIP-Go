@@ -233,12 +233,11 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 
 	// Set placeholder meta for image crop.
 	update_user_meta( (int) $object_id, "vipbp-{$avatar_type}", array(
-		'crop_w'         => bp_core_avatar_full_width(),
-		'crop_h'         => bp_core_avatar_full_height(),
-		'crop_x'         => 0,
-		'crop_y'         => 0,
-		'original_width' => getimagesize( $file['file']['tmp_name'] )[0],
-		'ui_width'       => $crop_image_width,
+		'crop_w'   => bp_core_avatar_full_width(),
+		'crop_h'   => bp_core_avatar_full_height(),
+		'crop_x'   => 0,
+		'crop_y'   => 0,
+		'ui_width' => $crop_image_width,
 	) );
 
 
