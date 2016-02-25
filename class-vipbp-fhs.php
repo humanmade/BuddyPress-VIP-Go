@@ -122,6 +122,11 @@ class VIPBP_FHS extends A8C_Files {
 			$this->get_files_service_hostname() . '/' . $get_upload_path->invoke( $this ) .	"/{$avatar_dir}/{$item_id}/avatar.png"
 		), true ) );
 
+
+		/*
+		 * Purge file cache.
+		 */
+
 		// See https://github.com/wpcomvip/buddypress-core-test/issues/6
 		$purge_file_cache = new ReflectionMethod( __CLASS_, 'purge_file_cache' );
 		$purge_file_cache->setAccessible( true );
