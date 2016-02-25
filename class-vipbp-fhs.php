@@ -69,7 +69,7 @@ class VIPBP_FHS extends A8C_Files {
 		 *
 		 * See https://github.com/wpcomvip/buddypress-core-test/issues/6
 		 */
-		$purge_file_cache = new ReflectionMethod( __CLASS_, 'purge_file_cache' );
+		$purge_file_cache = new ReflectionMethod( __CLASS__, 'purge_file_cache' );
 		$purge_file_cache->setAccessible( true );
 		$purge_file_cache->invoke( $this, $response['url'], 'PURGE' );
 
@@ -128,7 +128,7 @@ class VIPBP_FHS extends A8C_Files {
 		 */
 
 		// See https://github.com/wpcomvip/buddypress-core-test/issues/6
-		$purge_file_cache = new ReflectionMethod( __CLASS_, 'purge_file_cache' );
+		$purge_file_cache = new ReflectionMethod( __CLASS__, 'purge_file_cache' );
 		$purge_file_cache->setAccessible( true );
 		$purge_file_cache->invoke(
 			$this,
