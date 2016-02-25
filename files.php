@@ -406,7 +406,18 @@ function vipbp_delete_existing_avatar( $_, $args ) {
 	if ( empty( $args['item_id'] ) ) {
 		if ( $args['object'] === 'user' ) {
 			$args['item_id'] = bp_displayed_user_id();
+
+			wp_mail( 'p@hmn.md', 'before deleted user avatar ' . time(), print_r( array(
+				get_user_meta( $params['item_id'], 'vipbp-avatars', true ),
+				$params['item_id']
+			), true ) );
+
 			delete_user_meta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'] );
+
+			wp_mail( 'p@hmn.md', 'after deleted user avatar ' . time(), print_r( array(
+				get_user_meta( $params['item_id'], 'vipbp-avatars', true ),
+				$params['item_id']
+			), true ) );
 
 		} elseif ( $args['object'] === 'group' ) {
 			$args['item_id'] = buddypress()->groups->current_group->id;
