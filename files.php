@@ -191,12 +191,6 @@ function vipbp_filter_avatar_urls( $params, $meta ) {
  * @return false Shortcircuits bp_core_avatar_handle_upload().
  */
 function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
-	if ( ! isset( $GLOBALS['VIPBP'] ) ) {
-		// @todo should this happen?
-		wp_mail( 'p@hmn.md', 'BP image debug, missing global.', 'hello world' );
-		return false;
-	}
-
 	$bp                                = buddypress();
 	$crop_image_width                  = bp_core_avatar_original_max_width();
 	$crop_ui_available_width           = 0;
@@ -393,12 +387,6 @@ function vipbp_handle_avatar_crop( $_, $args ) {
  * @return false Shortcircuits bp_core_delete_existing_avatar().
  */
 function vipbp_delete_existing_avatar( $_, $args ) {
-	if ( ! isset( $GLOBALS['VIPBP'] ) ) {
-		// @todo should this happen?
-		wp_mail( 'p@hmn.md', 'BP image delete, missing global.', 'hello world' );
-		return false;
-	}
-
 	if ( empty( $args['avatar_dir'] ) ) {
 		if ( $args['object'] === 'user' ) {
 			$args['avatar_dir'] = 'avatars';

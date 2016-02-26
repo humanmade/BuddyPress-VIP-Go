@@ -14,16 +14,14 @@
 defined( 'ABSPATH' ) || exit;
 
 add_action( 'bp_loaded', function() {
+	if ( ! class_exists( 'A8C_Files' ) || ! defined( 'FILES_CLIENT_SITE_ID' ) || !defined( 'FILES_ACCESS_TOKEN' ) ) {
+		return;
+	}
+
 	require_once __DIR__ . '/files.php';
+	require_once __DIR__ . '/class-vipbp-fhs.php';
 
-	if ( class_exists( 'A8C_Files' ) ) {
-		require_once __DIR__ . '/class-vipbp-fhs.php';
-	}
-
-	// Extends Automattic's FHS plugin for BuddyPress.
-	if ( class_exists( 'A8C_Files' ) && defined( 'FILES_CLIENT_SITE_ID' ) && defined( 'FILES_ACCESS_TOKEN' ) ) {
-		add_action( 'bp_init', function() {
-			$GLOBALS['VIPBP'] = new VIPBP_FHS();
-		}, 1 );
-	}
+	add_action( 'bp_init', function() {
+		$GLOBALS['VIPBP'] = new VIPBP_FHS();
+	}, 1 );
 } );
