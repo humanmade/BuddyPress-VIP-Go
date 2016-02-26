@@ -36,6 +36,7 @@ add_action( 'bp_init', function() {
 	 * Tweaks for deleting avatars and cover images -- bp_core_delete_existing_avatar() and bp_attachments_delete_file().
 	 */
 	add_filter( 'bp_core_pre_delete_existing_avatar', 'vipbp_delete_existing_avatar', 10, 2 );
+	add_filter( 'bp_attachments_pre_delete_file', 'vipbp_delete_existing_cover_image', 10, 2 );
 } );
 
 /**
@@ -203,13 +204,33 @@ function vipbp_filter_avatar_urls( $params, $meta ) {
  * }
  * @return string Cover image URL.
  */
-function vipbp_filter_get_attachment( $value, $params ) {
-	if ( $value !== false ) {
-		return $value;
+function vipbp_filter_get_attachment( $value, $args ) {
+	$component = '';
+	$meta      = array();
+
+	if ( $args['object_dir'] === 'members' ) {
+		$component = 'xprofile';
+		$meta      = get_user_meta( $args['item_id'], 'vipbp-user-cover', true );
+
+	} elseif ( $args['object_dir'] === 'groups' ) {
+		$component = 'groups';
+		$meta      = groups_get_groupmeta( $args['item_id'], 'vipbp-group-cover', true );
 	}
 
-	$path = '/' . $params['object_dir'] . '/' . $params['item_id'] . '/' . $params['type'] . '/avatar.png';
-	return bp_attachments_uploads_dir_get()['baseurl'] . $path;
+	if ( $meta ) {
+		$dimensions = bp_attachments_get_cover_image_dimensions( $component );
+
+		return add_query_arg( urlencode_deep( array(
+			// Best fit the cover image.
+			'fit' => sprintf( '%d,%d', $component['width'], $component['height'] ),
+
+			// Removes EXIF and IPTC data.
+			'strip'  => 'info',
+		) ), $meta['url'] );
+
+	} else {
+		return false;
+	}
 }
 
 /**
@@ -385,6 +406,18 @@ function vip_handle_cover_image_upload( $_, $args, $needs_reset, $object_data ) 
 		) );
 	}
 
+	// Set meta so we know there's an image.
+	if ( $args['object'] === 'user' ) {
+		update_user_meta( $args['item_id'], 'vipbp-user-cover', array(
+			'url' => $result['url'],
+		) );
+
+	} elseif ( $args['object'] === 'group' ) {
+		groups_update_groupmeta( $args['item_id'], 'vipbp-group-cover', array(
+			'url' => $result['url'],
+		) );
+	}
+
 	do_action( $object_data['component'] . '_cover_image_uploaded', (int) $args['item_id'] );
 
 	bp_attachments_json_response( true, ! empty( $_POST['html4' ] ), array(
@@ -505,5 +538,36 @@ function vipbp_delete_existing_avatar( $_, $args ) {
 	}
 
 	do_action( 'bp_core_delete_existing_avatar', $args );
+	return false;
+}
+
+/**
+ * Handle deleting cover images on the VIP Go environment.
+ *
+ * Permission checks are made upstream in several screen handling functions.
+ *
+ * @param string $_ Unused.
+ * @param array Array of arguments for the attachment deletion.
+ * @return false Shortcircuits bp_attachments_delete_file().
+ */
+function vipbp_delete_existing_cover_image( $_, $args ) {
+	$meta = array();
+
+	if ( $args['object_dir'] === 'members' ) {
+		$meta = get_user_meta( $args['item_id'], 'vipbp-user-cover', true );
+
+	} elseif ( $args['object_dir'] === 'groups' ) {
+		$meta = groups_get_groupmeta( $args['item_id'], 'vipbp-group-cover', true );
+	}
+
+	// See https://github.com/wpcomvip/buddypress-core-test/issues/6
+	$get_upload_path = new ReflectionMethod( 'VIPBP_FHS', 'get_upload_path' );
+	$get_upload_path->setAccessible( true );
+
+	$GLOBALS['VIPBP']->bp_delete_file(
+		'buddypress/' . $args['object_dir'],
+		$args['item_id'] . '/' . $args['type']
+	);
+
 	return false;
 }
