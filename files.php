@@ -217,12 +217,12 @@ function vipbp_filter_get_attachment( $value, $args ) {
 		$meta      = groups_get_groupmeta( $args['item_id'], 'vipbp-group-cover', true );
 	}
 
-	if ( $meta ) {
-		$dimensions = bp_attachments_get_cover_image_dimensions( $component );
+	$dimensions = bp_attachments_get_cover_image_dimensions( $component );
 
+	if ( $meta && $dimensions ) {
 		return add_query_arg( urlencode_deep( array(
 			// Best fit the cover image.
-			'fit' => sprintf( '%d,%d', $component['width'], $component['height'] ),
+			'fit' => sprintf( '%d,%d', $dimensions['width'], $dimensions['height'] ),
 
 			// Removes EXIF and IPTC data.
 			'strip'  => 'info',
