@@ -33,7 +33,7 @@ add_action( 'bp_init', function() {
 	add_filter( 'bp_core_pre_avatar_handle_crop', 'vipbp_handle_avatar_crop', 10, 2 );
 
 	/*
-	 * Tweaks for deleting avatars -- bp_core_delete_existing_avatar().
+	 * Tweaks for deleting avatars and cover images -- bp_core_delete_existing_avatar() and bp_attachments_delete_file().
 	 */
 	add_filter( 'bp_core_pre_delete_existing_avatar', 'vipbp_delete_existing_avatar', 10, 2 );
 } );
@@ -193,12 +193,12 @@ function vipbp_filter_avatar_urls( $params, $meta ) {
  * for a given user or group. Our filter on `bp_attachments_pre_get_attachment` prevents this
  * happening.
  *
- * @param bool|string $value If false is returned, proceed with default behaviour. Otherwise, value returned verbatim.
- * @param array $params {
+ * @param null|string $value If null is returned, proceed with default behaviour. Otherwise, value returned verbatim.
+ * @param array $args {
  *     @type string $object_dir  The object dir (eg: members/groups). Defaults to members.
  *     @type int    $item_id     The object id (eg: a user or a group id). Defaults to current user.
  *     @type string $type        The type of the attachment which is also the subdir where files are saved.
- *                               Defaults to 'cover-image'
+ *                               Defaults to 'cover-image'.
  *     @type string $file        The name of the file.
  * }
  * @return string Cover image URL.
