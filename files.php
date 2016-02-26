@@ -8,18 +8,24 @@ defined( 'ABSPATH' ) || exit;
 
 add_action( 'bp_init', function() {
 	/*
-	 * Tweaks for fetching avatars -- bp_core_fetch_avatar().
+	 * Tweaks for fetching avatars and cover images -- bp_core_fetch_avatar() and bp_attachments_get_attachment().
 	 */
 	add_filter( 'bp_core_avatar_folder_dir',    '__return_empty_string' );
 	add_filter( 'bp_core_fetch_avatar_no_grav', '__return_true' );
 	add_filter( 'bp_core_default_avatar_user',  'vipbp_filter_user_avatar_urls', 10, 2 );
 	add_filter( 'bp_core_default_avatar_group', 'vipbp_filter_group_avatar_urls', 10, 2 );
+	add_filter( 'bp_attachments_pre_get_attachment', 'vipbp_filter_get_attachment', 10, 2 );
 
 	/*
 	 * Tweaks for uploading user and group avatars -- bp_core_avatar_handle_upload().
 	 */
 	add_filter( 'bp_core_pre_avatar_handle_upload', 'vipbp_handle_avatar_upload', 10, 3 );
 	add_filter( 'bp_avatar_pre_handle_capture',     'vipbp_handle_avatar_capture', 10, 3 );
+
+	/*
+	 * Tweaks for uploading cover images -- bp_attachments_cover_image_ajax_upload().
+	 */
+	add_filter( 'bp_attachments_pre_cover_image_ajax_upload', 'vip_handle_cover_image_upload', 10, 2 );
 
 	/*
 	 * Tweaks for cropping user and group avatars -- bp_core_avatar_handle_crop().
@@ -77,7 +83,7 @@ function vipbp_filter_group_avatar_urls( $_, $params ) {
 }
 
 /**
- * Change any the URL of any kind of avatars to their locations on VIP Go FHS.
+ * Change the URL of any kind of avatars to their locations on the VIP Go FHS.
  *
  * Intended as a helper function for vipbp_filter_user_avatar_urls() and
  * vipbp_filter_group_avatar_urls() to avoid duplication.
@@ -178,6 +184,32 @@ function vipbp_filter_avatar_urls( $params, $meta ) {
 
 	$avatar_url = apply_filters( 'vipbp_filter_avatar_urls', $avatar_url, $params, $meta );
 	return set_url_scheme( $avatar_url, $params['scheme'] );
+}
+
+/**
+ * Change the URL of any kind of cover image to their locations on the VIP Go FHS.
+ *
+ * By default, BuddyPress iterates through the local file system to find an uploaded cover iamge
+ * for a given user or group. Our filter on `bp_attachments_pre_get_attachment` prevents this
+ * happening.
+ *
+ * @param bool|string $value If false is returned, proceed with default behaviour. Otherwise, value returned verbatim.
+ * @param array $params {
+ *     @type string $object_dir  The object dir (eg: members/groups). Defaults to members.
+ *     @type int    $item_id     The object id (eg: a user or a group id). Defaults to current user.
+ *     @type string $type        The type of the attachment which is also the subdir where files are saved.
+ *                               Defaults to 'cover-image'
+ *     @type string $file        The name of the file.
+ * }
+ * @return string Cover image URL.
+ */
+function vipbp_filter_get_attachment( $value, $params ) {
+	if ( $value !== false ) {
+		return $value;
+	}
+
+	$path = '/' . $params['object_dir'] . '/' . $params['item_id'] . '/' . $params['type'] . '/avatar.png';
+	return bp_attachments_uploads_dir_get()['baseurl'] . $path;
 }
 
 /**
@@ -310,6 +342,55 @@ function vipbp_handle_avatar_capture( $_, $data, $item_id ) {
 	bp_core_avatar_handle_crop( array(
 		'item_id'       => $item_id,
 		'original_file' => $tmp_name,
+	) );
+
+	return false;
+}
+
+/**
+ * Upload cover images to VIP Go FHS. Overrides default behaviour.
+ *
+ * This function duplicates significant logic from BuddyPress upstream because
+ * bp_attachments_cover_image_ajax_upload() could be significantly improved;
+ * it does too much. We'll be able to simply this function in the future.
+ *
+ * Permission checks are made upstream in bp_attachments_cover_image_ajax_upload().
+ *
+ * @param string $_ Unused.
+ * @param array $args
+ * @param array $needs_reset Stores original value of certain globals we need to revert to later.
+ * @param array $object_data
+ * @return false Shortcircuits bp_attachments_cover_image_ajax_upload().
+ */
+function vip_handle_cover_image_upload( $_, $args, $needs_reset, $object_data ) {
+	$bp                                = buddypress();
+	$upload_dir_info                   = ( new BP_Attachment_Cover_Image() )->upload_dir_filter();
+	list( , $avatar_type, $object_id ) = explode( '/', $upload_dir_info['subdir'] );
+
+	$result = $GLOBALS['VIPBP']->bp_upload_file( $upload_dir_info, $_FILES );
+
+	// Reset globals changed in bp_attachments_cover_image_ajax_upload().
+	if ( ! empty( $needs_reset ) ) {
+		if ( ! empty( $needs_reset['component'] ) ) {
+			$bp->{$needs_reset['component']}->{$needs_reset['key']} = $needs_reset['value'];
+		} else {
+			$bp->{$needs_reset['key']} = $needs_reset['value'];
+		}
+	}
+
+	if ( ! empty( $result['error'] ) ) {
+		bp_attachments_json_response( false, $is_html4, array(
+			'type'    => 'upload_error',
+			'message' => sprintf( __( 'Upload Failed! Error was: %s', 'buddypress' ), $result['error'] ),
+		) );
+	}
+
+	do_action( $object_data['component'] . '_cover_image_uploaded', (int) $args['item_id'] );
+
+	bp_attachments_json_response( true, ! empty( $_POST['html4' ] ), array(
+		'name'          => basename( $$result['url']),
+		'url'           => $$result['url'],
+		'feedback_code' => 1,
 	) );
 
 	return false;
