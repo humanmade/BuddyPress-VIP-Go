@@ -388,8 +388,8 @@ function vip_handle_cover_image_upload( $_, $args, $needs_reset, $object_data ) 
 	do_action( $object_data['component'] . '_cover_image_uploaded', (int) $args['item_id'] );
 
 	bp_attachments_json_response( true, ! empty( $_POST['html4' ] ), array(
-		'name'          => basename( $$result['url']),
-		'url'           => $$result['url'],
+		'name'          => basename( $result['url']),
+		'url'           => $result['url'],
 		'feedback_code' => 1,
 	) );
 
