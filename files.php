@@ -365,7 +365,7 @@ function vipbp_handle_avatar_capture( $_, $data, $item_id ) {
 function vip_handle_cover_image_upload( $_, $args, $needs_reset, $object_data ) {
 	$bp                        = buddypress();
 	$upload_dir_info           = ( new BP_Attachment_Cover_Image() )->upload_dir_filter();
-	$upload_dir_info['subdir'] = bp_attachments_uploads_dir_get( 'dir' ) . $upload_dir_info['subdir'];
+	$upload_dir_info['subdir'] = '/'. bp_attachments_uploads_dir_get( 'dir' ) . $upload_dir_info['subdir'];
 
 	$result = $GLOBALS['VIPBP']->bp_upload_file( $upload_dir_info, $_FILES );
 
