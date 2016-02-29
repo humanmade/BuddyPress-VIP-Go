@@ -620,12 +620,10 @@ function vipbp_delete_existing_avatar( $_, $args ) {
 		groups_delete_groupmeta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'] );	
 	}
 
-	wp_mail( 'p@hmn.md', 'delete debug ' . time(), print_r(
-		str_replace( get_site_url() . '/', '', $meta['url'] ),
-		true
-	) );
-	wp_delete_file( str_replace( get_site_url() . '/', '', $meta['url'] ) );
-	do_action( 'bp_core_delete_existing_avatar', $args );
+	if ( $meta ) {
+		wp_delete_file( str_replace( get_site_url() . '/', '', $meta['url'] ) );
+		do_action( 'bp_core_delete_existing_avatar', $args );
+	}
 
 	if ( $switched ) {
 		restore_current_blog();
@@ -659,7 +657,9 @@ function vipbp_delete_cover_image( $_, $args ) {
 		$meta = groups_get_groupmeta( $args['item_id'], 'vipbp-group-cover', true );
 	}
 
-	wp_delete_file( str_replace( get_site_url(), '', $meta['url'] ) );
+	if ( $meta ) {
+		wp_delete_file( str_replace( get_site_url(), '', $meta['url'] ) );
+	}
 
 	if ( $switched ) {
 		restore_current_blog();
