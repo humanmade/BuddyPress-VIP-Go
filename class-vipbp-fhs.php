@@ -39,22 +39,13 @@ class VIPBP_FHS extends A8C_Files {
 			            $get_upload_path->invoke( $this ) .
 			            $upload_dir_info['subdir'] . '/avatar.png';
 
-		wp_mail( 'p@hmn.md', 'Before upload_file ' . time(), print_r( array(
-			'file' => $file['tmp_name'],
-			'type' => $mime_type,
-			'url'  => $upload_url,
-		), true ) );
-
 		$response = $this->upload_file( array(
 			'file' => $file['tmp_name'],
 			'type' => $mime_type,
 			'url'  => $upload_url,
 		), 'editor_save' );
 
-		if ( ! empty( $response['error'] ) ) {
-			wp_mail( 'p@hmn.md', 'During upload_file, error uploading ' . time(), print_r( $response, true ) );
-
-		} else {
+		if ( empty( $response['error'] ) ) {
 			// Fix URL to point to real location.
 			$response['url'] = str_replace(
 				$this->get_files_service_hostname() . '/' . $get_upload_path->invoke( $this ),
@@ -63,7 +54,6 @@ class VIPBP_FHS extends A8C_Files {
 			);
 		}
 
-		wp_mail( 'p@hmn.md', 'After upload_file ' . time(), print_r( $response, true ) );
 
 		/*
 		 * After upload, flush the cache. This will fix problems with re-use of the same filename
@@ -75,7 +65,6 @@ class VIPBP_FHS extends A8C_Files {
 		$purge_file_cache->setAccessible( true );
 		$purge_file_cache->invoke( $this, $response['url'], 'PURGE' );
 
-		wp_mail( 'p@hmn.md', 'After upload_file purge ' . time(), print_r( $response, true ) );
 		return $response;
 	}
 
@@ -118,11 +107,6 @@ class VIPBP_FHS extends A8C_Files {
 			error_log( sprintf( 'Error deleting the BuddyPress file from the remote servers: Code %d', $http_code ) );
 			return;
 		}
-
-		wp_mail( 'p@hmn.md', 'After delete_file ' . time(), print_r( array(
-			$http_code,
-			$this->get_files_service_hostname() . '/' . $get_upload_path->invoke( $this ) .	"/{$avatar_dir}/{$item_id}/avatar.png"
-		), true ) );
 
 
 		/*

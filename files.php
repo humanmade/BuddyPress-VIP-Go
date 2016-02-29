@@ -560,10 +560,6 @@ function vipbp_delete_cover_image( $_, $args ) {
 		$meta = groups_get_groupmeta( $args['item_id'], 'vipbp-group-cover', true );
 	}
 
-	// See https://github.com/wpcomvip/buddypress-core-test/issues/6
-	$get_upload_path = new ReflectionMethod( 'VIPBP_FHS', 'get_upload_path' );
-	$get_upload_path->setAccessible( true );
-
 	$GLOBALS['VIPBP']->bp_delete_file(
 		'buddypress/' . $args['object_dir'],
 		$args['item_id'] . '/' . $args['type']
