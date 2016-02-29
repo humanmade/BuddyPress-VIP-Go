@@ -55,10 +55,23 @@ add_action( 'bp_init', function() {
  * @return string Avatar URL.
  */
 function vipbp_filter_user_avatar_urls( $_, $params ) {
-	return vipbp_filter_avatar_urls(
+	$switched = false;
+
+	if ( ! bp_is_root_blog() ) {
+		switch_to_blog( bp_get_root_blog_id() );
+		$switched = true;
+	}
+
+	$retval = vipbp_filter_avatar_urls(
 		$params,
 		get_user_meta( $params['item_id'], 'vipbp-avatars', true ) ?: array()
 	);
+
+	if ( $switched ) {
+		restore_current_blog();
+	}
+
+	return $retval;
 }
 
 /**
@@ -77,10 +90,24 @@ function vipbp_filter_user_avatar_urls( $_, $params ) {
  * @return string Avatar URL.
  */
 function vipbp_filter_group_avatar_urls( $_, $params ) {
-	return vipbp_filter_avatar_urls(
+	$switched = false;
+
+	if ( ! bp_is_root_blog() ) {
+		switch_to_blog( bp_get_root_blog_id() );
+		$switched = true;
+	}
+
+	$retval = vipbp_filter_avatar_urls(
 		$params,
 		groups_get_groupmeta( $params['item_id'], 'vipbp-group-avatars', true ) ?: array()
 	);
+
+	if ( $switched ) {
+		restore_current_blog();
+	}
+
+	return $retval;
+
 }
 
 /**
@@ -94,7 +121,13 @@ function vipbp_filter_group_avatar_urls( $_, $params ) {
  * @return string Avatar URL.
  */
 function vipbp_filter_avatar_urls( $params, $meta ) {
-	$bp = buddypress();
+	$bp       = buddypress();
+	$switched = false;
+
+	if ( ! bp_is_root_blog() ) {
+		switch_to_blog( bp_get_root_blog_id() );
+		$switched = true;
+	}
 
 
 	/**
@@ -141,10 +174,16 @@ function vipbp_filter_avatar_urls( $params, $meta ) {
 			$gravatar_args['d'] = $default_grav;
 		}
 
-		return esc_url( add_query_arg(
+		$retval = esc_url( add_query_arg(
 			rawurlencode_deep( array_filter( $gravatar_args ) ),
 			$gravatar
 		) );
+
+		if ( $switched ) {
+			restore_current_blog();
+		}
+
+		return $retval;
 	}
 
 
@@ -185,7 +224,13 @@ function vipbp_filter_avatar_urls( $params, $meta ) {
 	) . '/avatar.png' );
 
 	$avatar_url = apply_filters( 'vipbp_filter_avatar_urls', $avatar_url, $params, $meta );
-	return set_url_scheme( $avatar_url, $params['scheme'] );
+	$avatar_url = set_url_scheme( $avatar_url, $params['scheme'] );
+
+	if ( $switched ) {
+		restore_current_blog();
+	}
+
+	return $avatar_url;
 }
 
 /**
@@ -208,6 +253,12 @@ function vipbp_filter_avatar_urls( $params, $meta ) {
 function vipbp_filter_get_cover_image( $value, $args ) {
 	$component = '';
 	$meta      = array();
+	$switched  = false;
+
+	if ( ! bp_is_root_blog() ) {
+		switch_to_blog( bp_get_root_blog_id() );
+		$switched = true;
+	}
 
 	if ( $args['object_dir'] === 'members' ) {
 		$component = 'xprofile';
@@ -221,7 +272,7 @@ function vipbp_filter_get_cover_image( $value, $args ) {
 	$dimensions = bp_attachments_get_cover_image_dimensions( $component );
 
 	if ( $meta && $dimensions ) {
-		return add_query_arg( urlencode_deep( array(
+		$retval = add_query_arg( urlencode_deep( array(
 			// Best fit the cover image.
 			'fit' => sprintf( '%d,%d', $dimensions['width'], $dimensions['height'] ),
 
@@ -230,8 +281,14 @@ function vipbp_filter_get_cover_image( $value, $args ) {
 		) ), $meta['url'] );
 
 	} else {
-		return false;
+		$retval = false;
 	}
+
+	if ( $switched ) {
+		restore_current_blog();
+	}
+
+	return $retval;
 }
 
 /**
@@ -245,6 +302,13 @@ function vipbp_filter_get_cover_image( $value, $args ) {
  * @return false Shortcircuits bp_core_avatar_handle_upload().
  */
 function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
+	$switched = false;
+
+	if ( ! bp_is_root_blog() ) {
+		switch_to_blog( bp_get_root_blog_id() );
+		$switched = true;
+	}
+
 	$bp                                = buddypress();
 	$crop_image_width                  = bp_core_avatar_original_max_width();
 	$crop_ui_available_width           = 0;
@@ -261,6 +325,11 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 
 	if ( ! empty( $result['error'] ) ) {
 		bp_core_add_message( sprintf( __( 'Upload failed! Error was: %s', 'buddypress' ), $result['error'] ), 'error' );
+
+		if ( $switched ) {
+			restore_current_blog();
+		}
+
 		return false;
 	}
 
@@ -316,6 +385,10 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 		);
 	}
 
+	if ( $switched ) {
+		restore_current_blog();
+	}
+
 	return false;
 }
 
@@ -330,6 +403,13 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
  * @return false Shortcircuits bp_avatar_handle_capture().
  */
 function vipbp_handle_avatar_capture( $_, $data, $item_id ) {
+	$switched = false;
+
+	if ( ! bp_is_root_blog() ) {
+		switch_to_blog( bp_get_root_blog_id() );
+		$switched = true;
+	}
+
 	$avatar_folder_dir = apply_filters(
 		'bp_core_avatar_folder_dir',
 		bp_core_avatar_upload_path() . '/avatars/' . $item_id,
@@ -366,6 +446,10 @@ function vipbp_handle_avatar_capture( $_, $data, $item_id ) {
 		'original_file' => $tmp_name,
 	) );
 
+	if ( $switched ) {
+		restore_current_blog();
+	}
+
 	return false;
 }
 
@@ -385,6 +469,13 @@ function vipbp_handle_avatar_capture( $_, $data, $item_id ) {
  * @return false Shortcircuits bp_attachments_cover_image_ajax_upload().
  */
 function vip_handle_cover_image_upload( $_, $args, $needs_reset, $object_data ) {
+	$switched = false;
+
+	if ( ! bp_is_root_blog() ) {
+		switch_to_blog( bp_get_root_blog_id() );
+		$switched = true;
+	}
+
 	$bp                        = buddypress();
 	$upload_dir_info           = ( new BP_Attachment_Cover_Image() )->upload_dir_filter();
 	$upload_dir_info['subdir'] = '/'. bp_attachments_uploads_dir_get( 'dir' ) . $upload_dir_info['subdir'];
@@ -427,6 +518,10 @@ function vip_handle_cover_image_upload( $_, $args, $needs_reset, $object_data ) 
 		'feedback_code' => 1,
 	) );
 
+	if ( $switched ) {
+		restore_current_blog();
+	}
+
 	return false;
 }
 
@@ -466,6 +561,13 @@ function vipbp_handle_avatar_crop( $_, $args ) {
 		'crop_y' => (int) $args['crop_y'],
 	);
 
+	$switched = false;
+
+	if ( ! bp_is_root_blog() ) {
+		switch_to_blog( bp_get_root_blog_id() );
+		$switched = true;
+	}
+
 	if ( $args['object'] === 'user' ) {
 		$meta = get_user_meta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'], true );
 		$meta = wp_parse_args( $cropping_meta, $meta );
@@ -475,6 +577,10 @@ function vipbp_handle_avatar_crop( $_, $args ) {
 		$meta = groups_get_groupmeta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'], true );
 		$meta = wp_parse_args( $cropping_meta, $meta );
 		groups_update_groupmeta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'], $meta );	
+	}
+
+	if ( $switched ) {
+		restore_current_blog();
 	}
 
 	return false;
@@ -501,6 +607,13 @@ function vipbp_handle_avatar_crop( $_, $args ) {
  * @return false Shortcircuits bp_core_delete_existing_avatar().
  */
 function vipbp_delete_existing_avatar( $_, $args ) {
+	$switched = false;
+
+	if ( ! bp_is_root_blog() ) {
+		switch_to_blog( bp_get_root_blog_id() );
+		$switched = true;
+	}
+
 	if ( empty( $args['avatar_dir'] ) ) {
 		if ( $args['object'] === 'user' ) {
 			$args['avatar_dir'] = 'avatars';
@@ -510,6 +623,10 @@ function vipbp_delete_existing_avatar( $_, $args ) {
 
 		$args['avatar_dir'] = apply_filters( 'bp_core_avatar_dir', $args['avatar_dir'], $args['object'] );
 		if ( ! $args['avatar_dir'] ) {
+			if ( $switched ) {
+				restore_current_blog();
+			}
+
 			return false;
 		}
 	}
@@ -523,6 +640,10 @@ function vipbp_delete_existing_avatar( $_, $args ) {
 
 		$args['item_id'] = apply_filters( 'bp_core_avatar_item_id', $args['item_id'], $args['object'] );
 		if ( ! $args['item_id'] ) {
+			if ( $switched ) {
+				restore_current_blog();
+			}
+
 			return false;
 		}
 	}
@@ -538,6 +659,11 @@ function vipbp_delete_existing_avatar( $_, $args ) {
 	}
 
 	do_action( 'bp_core_delete_existing_avatar', $args );
+
+	if ( $switched ) {
+		restore_current_blog();
+	}
+
 	return false;
 }
 
@@ -551,7 +677,13 @@ function vipbp_delete_existing_avatar( $_, $args ) {
  * @return false Shortcircuits bp_attachments_delete_file().
  */
 function vipbp_delete_cover_image( $_, $args ) {
-	$meta = array();
+	$meta     = array();
+	$switched = false;
+
+	if ( ! bp_is_root_blog() ) {
+		switch_to_blog( bp_get_root_blog_id() );
+		$switched = true;
+	}
 
 	if ( $args['object_dir'] === 'members' ) {
 		$meta = get_user_meta( $args['item_id'], 'vipbp-user-cover', true );
@@ -564,6 +696,10 @@ function vipbp_delete_cover_image( $_, $args ) {
 		'buddypress/' . $args['object_dir'],
 		$args['item_id'] . '/' . $args['type']
 	);
+
+	if ( $switched ) {
+		restore_current_blog();
+	}
 
 	return false;
 }
