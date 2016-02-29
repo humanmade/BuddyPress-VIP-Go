@@ -71,7 +71,7 @@ function vipbp_filter_user_avatar_urls( $_, $params ) {
 		restore_current_blog();
 	}
 
-	return $retval;
+	return $retval['url'];
 }
 
 /**
@@ -106,8 +106,7 @@ function vipbp_filter_group_avatar_urls( $_, $params ) {
 		restore_current_blog();
 	}
 
-	return $retval;
-
+	return $retval['url'];
 }
 
 /**
