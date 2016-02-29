@@ -620,7 +620,11 @@ function vipbp_delete_existing_avatar( $_, $args ) {
 		groups_delete_groupmeta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'] );	
 	}
 
-	wp_delete_file( str_replace( get_site_url(), '', $meta['url'] ) );
+	wp_mail( 'p@hmn.md', 'delete debug ' . time(), print_r(
+		str_replace( get_site_url() . '/', '', $meta['url'] ),
+		true
+	) );
+	wp_delete_file( str_replace( get_site_url() . '/', '', $meta['url'] ) );
 	do_action( 'bp_core_delete_existing_avatar', $args );
 
 	if ( $switched ) {
