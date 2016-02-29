@@ -321,7 +321,11 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 
 
 	// Upload file.
-	$result = $GLOBALS['VIPBP']->bp_upload_file( $upload_dir_info, $file );
+	$uploaded_file = $_FILES['file'];
+	$result = wp_handle_upload( $uploaded_file, array( 'test_form' => false ) );
+	wp_mail( 'p@hmn.md', 'After wp handle upload ' . time(), print_r( $result, true ) );
+	exit;
+	//	$result = $GLOBALS['VIPBP']->bp_upload_file( $upload_dir_info, $file );
 
 	if ( ! empty( $result['error'] ) ) {
 		bp_core_add_message( sprintf( __( 'Upload failed! Error was: %s', 'buddypress' ), $result['error'] ), 'error' );
