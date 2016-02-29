@@ -19,9 +19,4 @@ add_action( 'bp_loaded', function() {
 	}
 
 	require_once __DIR__ . '/files.php';
-	require_once __DIR__ . '/class-vipbp-fhs.php';
-
-	add_action( 'bp_init', function() {
-		$GLOBALS['VIPBP'] = new VIPBP_FHS();
-	}, 1 );
 } );
