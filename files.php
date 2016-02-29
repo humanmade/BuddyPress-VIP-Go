@@ -1,6 +1,6 @@
 <?php
 /**
- * Integrates into VIP's File Hosting Service.
+ * Integrates BuddyPress into VIP's File Hosting Service.
  */
 
 // Exit if accessed directly.
@@ -14,7 +14,7 @@ add_action( 'bp_init', function() {
 	add_filter( 'bp_core_fetch_avatar_no_grav', '__return_true' );
 	add_filter( 'bp_core_default_avatar_user',  'vipbp_filter_user_avatar_urls', 10, 2 );
 	add_filter( 'bp_core_default_avatar_group', 'vipbp_filter_group_avatar_urls', 10, 2 );
-	add_filter( 'bp_attachments_pre_get_attachment', 'vipbp_filter_get_attachment', 10, 2 );
+	add_filter( 'bp_attachments_pre_get_attachment', 'vipbp_filter_get_cover_image', 10, 2 );
 
 	/*
 	 * Tweaks for uploading user and group avatars -- bp_core_avatar_handle_upload().
@@ -36,7 +36,7 @@ add_action( 'bp_init', function() {
 	 * Tweaks for deleting avatars and cover images -- bp_core_delete_existing_avatar() and bp_attachments_delete_file().
 	 */
 	add_filter( 'bp_core_pre_delete_existing_avatar', 'vipbp_delete_existing_avatar', 10, 2 );
-	add_filter( 'bp_attachments_pre_delete_file', 'vipbp_delete_existing_cover_image', 10, 2 );
+	add_filter( 'bp_attachments_pre_delete_file', 'vipbp_delete_cover_image', 10, 2 );
 } );
 
 /**
@@ -99,6 +99,7 @@ function vipbp_filter_avatar_urls( $params, $meta ) {
 
 	/**
 	 * If no meta exists, object does not have an avatar.
+	 * Return a Gravatar.
 	 */
 
 	if ( ! $meta ) {
@@ -152,7 +153,7 @@ function vipbp_filter_avatar_urls( $params, $meta ) {
 	 */
 
 	$avatar_args = array(
-		// Maybe clamp image width if it was uploaded on mobile.
+		// Maybe clamp image width (e.g. if it was uploaded on a narrow display).
 		'w'      => $meta['ui_width'],
 
 		// Crop avatar.
@@ -204,7 +205,7 @@ function vipbp_filter_avatar_urls( $params, $meta ) {
  * }
  * @return string Cover image URL.
  */
-function vipbp_filter_get_attachment( $value, $args ) {
+function vipbp_filter_get_cover_image( $value, $args ) {
 	$component = '';
 	$meta      = array();
 
@@ -476,7 +477,6 @@ function vipbp_handle_avatar_crop( $_, $args ) {
 		groups_update_groupmeta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'], $meta );	
 	}
 
-	wp_mail( 'p@hmn.md', 'avatar cropping meta ' . time(), print_r( $meta, true ) );
 	return false;
 }
 
@@ -550,7 +550,7 @@ function vipbp_delete_existing_avatar( $_, $args ) {
  * @param array Array of arguments for the attachment deletion.
  * @return false Shortcircuits bp_attachments_delete_file().
  */
-function vipbp_delete_existing_cover_image( $_, $args ) {
+function vipbp_delete_cover_image( $_, $args ) {
 	$meta = array();
 
 	if ( $args['object_dir'] === 'members' ) {
