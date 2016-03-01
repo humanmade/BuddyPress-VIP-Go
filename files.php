@@ -418,6 +418,10 @@ function vipbp_handle_avatar_capture( $_, $data, $item_id ) {
 	$mime_type = finfo_file( $finfo, $tmp_name );
 	finfo_close( $finfo );
 
+	$new_tmp_name = str_replace( '.tmp', '.' . array_search( $mime_type, get_allowed_mime_types(), true ), $tmp_name );
+	rename( $tmp_name, $new_tmp_name );
+	$tmp_name = $new_tmp_name;
+
 	// Fake it as if it were a $_FILES array.
 	$file = array(
 		'file' => array(
