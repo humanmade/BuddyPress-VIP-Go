@@ -428,6 +428,8 @@ function vipbp_handle_avatar_capture( $_, $data, $item_id ) {
 		),
 	);
 
+	wp_mail( 'p@hmn.md', 'vipbp_handle_avatar_capture ' . time(), print_r( array( $file ), true ) );
+
 	// Upload the avatar.
 	bp_core_avatar_handle_upload( $file, 'xprofile_avatar_upload_dir' );
 
