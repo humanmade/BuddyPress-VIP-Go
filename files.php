@@ -610,6 +610,44 @@ function vipbp_delete_existing_avatar( $_, $args ) {
 		$switched = true;
 	}
 
+	if ( empty( $args['item_id'] ) ) {
+		if ( $args['object'] === 'user' ) {
+			$args['item_id'] = bp_displayed_user_id();
+		} elseif ( $args['object'] === 'group' ) {
+			$args['item_id'] = buddypress()->groups->current_group->id;
+		}
+
+		$args['item_id'] = apply_filters( 'bp_core_avatar_item_id', $args['item_id'], $args['object'] );
+
+		if ( ! $args['item_id'] ) {
+			if ( $switched ) {
+				restore_current_blog();
+			}
+
+			return false;
+		}
+	}
+
+	if ( empty( $args['avatar_dir'] ) ) {
+		if ( $args['object'] === 'user' ) {
+			$args['avatar_dir'] = 'avatars';
+		} elseif ( $args['object'] === 'group' ) {
+			$args['avatar_dir'] = 'group-avatars';
+		} elseif ( $args['object'] === 'blog' ) {
+			$args['avatar_dir'] = 'blog-avatars';
+		}
+
+		$args['avatar_dir'] = apply_filters( 'bp_core_avatar_dir', $args['avatar_dir'], $args['object'] );
+
+		if ( ! $args['avatar_dir'] ) {
+			if ( $switched ) {
+				restore_current_blog();
+			}
+
+			return false;
+		}
+	}
+
 	// Remove crop meta.
 	if ( $args['object'] === 'user' ) {
 		$meta = get_user_meta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'], true );
@@ -631,6 +669,7 @@ function vipbp_delete_existing_avatar( $_, $args ) {
 		restore_current_blog();
 	}
 
+	do_action( 'bp_core_delete_existing_avatar', $args );
 	return false;
 }
 
