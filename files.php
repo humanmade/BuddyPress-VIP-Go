@@ -661,7 +661,9 @@ function vipbp_delete_existing_avatar( $_, $args ) {
 	wp_mail( 'p@hmn.md', 'vipbp_delete_existing_avatar ' . time(), print_r( array( $args, $meta ), true ) );
 
 	if ( $meta ) {
-		wp_delete_file( str_replace( get_site_url() . '/', '', $meta['url'] ) );
+		$meta['url'] = str_replace( get_site_url() . '/', '', strtok( $meta['url'], '?' ) );
+		wp_delete_file( $meta['url'] );
+
 		do_action( 'bp_core_delete_existing_avatar', $args );
 	}
 
