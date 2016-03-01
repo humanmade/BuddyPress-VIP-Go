@@ -314,7 +314,7 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 
 
 	// Upload file.
-	$uploaded_file = $_FILES['file'];
+	$uploaded_file = $file['file'];
 	$result        = wp_handle_upload( $uploaded_file, array(
 		'action'    => '',
 		'test_form' => false,
