@@ -692,11 +692,11 @@ function vipbp_delete_cover_image( $_, $args ) {
 
 	if ( $args['object_dir'] === 'members' ) {
 		$meta = get_user_meta( $args['item_id'], 'vipbp-user-cover', true );
-		delete_user_meta( $args['item_id'], 'vipbp-user-cover', true );
+		delete_user_meta( $args['item_id'], 'vipbp-user-cover' );
 
 	} elseif ( $args['object_dir'] === 'groups' ) {
 		$meta = groups_get_groupmeta( $args['item_id'], 'vipbp-group-cover', true );
-		groups_delete_groupmeta( $args['item_id'], 'vipbp-group-cover', true );
+		groups_delete_groupmeta( $args['item_id'], 'vipbp-group-cover' );
 	}
 
 	if ( $meta ) {
