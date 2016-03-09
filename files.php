@@ -265,7 +265,7 @@ function vipbp_filter_get_cover_image( $value, $args ) {
 	$dimensions = bp_attachments_get_cover_image_dimensions( $component );
 
 	if ( $meta && $dimensions ) {
-		$retval = add_query_arg( urlencode_deep( array(
+		$retval = add_query_arg( array(
 			// Fit the width.
 			'w'    => (int) $dimensions['width'],
 
@@ -274,7 +274,7 @@ function vipbp_filter_get_cover_image( $value, $args ) {
 
 			// Removes EXIF and IPTC data.
 			'strip'  => 'info',
-		) ), $meta['url'] );
+		), $meta['url'] );
 
 	} else {
 		$retval = false;
