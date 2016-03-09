@@ -461,7 +461,7 @@ function vipbp_handle_avatar_capture( $_, $data, $item_id ) {
  * @param array $args
  * @param array $needs_reset Stores original value of certain globals we need to revert to later.
  * @param array $object_data
- * @return false Shortcircuits bp_attachments_cover_image_ajax_upload().
+ * @return array Shortcircuits bp_attachments_cover_image_ajax_upload().
  */
 function vip_handle_cover_image_upload( $_, $args, $needs_reset, $object_data ) {
 	$switched = false;
@@ -491,10 +491,11 @@ function vip_handle_cover_image_upload( $_, $args, $needs_reset, $object_data ) 
 	}
 
 	if ( ! empty( $result['error'] ) ) {
-		bp_attachments_json_response( false, $is_html4, array(
-			'type'    => 'upload_error',
+		return array(
+			'result'  => false,
 			'message' => sprintf( __( 'Upload Failed! Error was: %s', 'buddypress' ), $result['error'] ),
-		) );
+			'type'    => 'upload_error',
+		);
 	}
 
 	// Set meta so we know there's an image.
@@ -511,17 +512,18 @@ function vip_handle_cover_image_upload( $_, $args, $needs_reset, $object_data ) 
 
 	do_action( $object_data['component'] . '_cover_image_uploaded', (int) $args['item_id'] );
 
-	bp_attachments_json_response( true, ! empty( $_POST['html4' ] ), array(
+	$retval = array(
+		'result'        => true,
+		'feedback_code' => 1,
 		'name'          => basename( $result['url']),
 		'url'           => $result['url'],
-		'feedback_code' => 1,
-	) );
+	);
 
 	if ( $switched ) {
 		restore_current_blog();
 	}
 
-	return false;
+	return $retval;
 }
 
 /**
