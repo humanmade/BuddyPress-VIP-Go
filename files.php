@@ -266,8 +266,11 @@ function vipbp_filter_get_cover_image( $value, $args ) {
 
 	if ( $meta && $dimensions ) {
 		$retval = add_query_arg( urlencode_deep( array(
-			// Best fit the cover image.
-			'fit' => sprintf( '%d,%d', $dimensions['width'], $dimensions['height'] ),
+			// Fit the width.
+			'w'    => (int) $dimensions['width'],
+
+			// Crop the middle part of the image.
+			'crop' => sprintf( '0,25,%dpx,%dpx', $dimensions['width'], $dimensions['height'] ),
 
 			// Removes EXIF and IPTC data.
 			'strip'  => 'info',
