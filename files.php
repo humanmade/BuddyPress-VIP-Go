@@ -305,6 +305,10 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 		$switched = true;
 	}
 
+	if ( ! function_exists( 'wp_handle_upload' ) ) {
+		require_once( ABSPATH . '/wp-admin/includes/file.php' );
+	}
+
 	$bp                                = buddypress();
 	$crop_image_width                  = bp_core_avatar_original_max_width();
 	$crop_ui_available_width           = 0;
@@ -412,6 +416,10 @@ function vipbp_handle_avatar_capture( $_, $data, $item_id ) {
 		$switched = true;
 	}
 
+	if ( ! function_exists( 'wp_tempnam' ) ) {
+		require_once( ABSPATH . '/wp-admin/includes/file.php' );
+	}
+
 	// Save bytestream to disk.
 	$tmp_name = wp_tempnam();
 	file_put_contents( $tmp_name, $data );
@@ -472,6 +480,10 @@ function vip_handle_cover_image_upload( $_, $args, $needs_reset, $object_data ) 
 	if ( ! bp_is_root_blog() ) {
 		switch_to_blog( bp_get_root_blog_id() );
 		$switched = true;
+	}
+
+	if ( ! function_exists( 'wp_handle_upload' ) ) {
+		require_once( ABSPATH . '/wp-admin/includes/file.php' );
 	}
 
 	$bp = buddypress();
