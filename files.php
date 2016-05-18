@@ -323,7 +323,7 @@ function vipbp_handle_avatar_upload( $_, $file, $upload_dir_filter ) {
 	// Upload file.
 	$uploaded_file = $file['file'];
 	$result        = wp_handle_upload( $uploaded_file, array(
-		'action'    => '',
+		'action'    => 'wp_handle_upload', // Matches Core's action for uploads, to ensure VIP Go fileservice filters are applied
 		'test_form' => false,
 	) );
 
@@ -491,7 +491,7 @@ function vip_handle_cover_image_upload( $_, $args, $needs_reset, $object_data ) 
 	// Upload file.
 	$uploaded_file = $_FILES['file'];
 	$result        = wp_handle_upload( $uploaded_file, array(
-		'action'    => '',
+		'action'    => 'wp_handle_upload', // Matches Core's action for uploads, to ensure VIP Go fileservice filters are applied
 		'test_form' => false,
 	) );
 
