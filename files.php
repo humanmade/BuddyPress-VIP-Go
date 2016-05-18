@@ -46,7 +46,7 @@ add_action( 'bp_init', function() {
  * for a given user or group. Our filter on `bp_core_avatar_folder_dir()` prevents this happening,
  * and our filter on `bp_core_fetch_avatar_no_grav` will make the code flow to this
  * bp_core_default_avatar_* filter.
- * 
+ *
  * It's normally used to override the fallback image for Gravatar, but by duplicating some logic, we
  * use it to here to set a custom URL to support VIP Go FHS without any core changes to BuddyPress.
  *
@@ -81,7 +81,7 @@ function vipbp_filter_user_avatar_urls( $_, $params ) {
  * for a given user or group. Our filter on `bp_core_avatar_folder_dir()` prevents this happening,
  * and our filter on `bp_core_fetch_avatar_no_grav` will make the code flow to this
  * bp_core_default_avatar_* filter.
- * 
+ *
  * It's normally used to override the fallback image for Gravatar, but by duplicating some logic, we
  * use it to here to set a custom URL to support VIP Go FHS without any core changes to BuddyPress.
  *
@@ -592,7 +592,7 @@ function vipbp_handle_avatar_crop( $_, $args ) {
 	} elseif ( $args['object'] === 'group' ) {
 		$meta = groups_get_groupmeta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'], true );
 		$meta = wp_parse_args( $cropping_meta, $meta );
-		groups_update_groupmeta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'], $meta );	
+		groups_update_groupmeta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'], $meta );
 	}
 
 	if ( $switched ) {
@@ -676,7 +676,7 @@ function vipbp_delete_existing_avatar( $_, $args ) {
 
 	} elseif ( $args['object'] === 'group' ) {
 		$meta = groups_get_groupmeta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'], true );
-		groups_delete_groupmeta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'] );	
+		groups_delete_groupmeta( (int) $args['item_id'], 'vipbp-' . $args['avatar_dir'] );
 	}
 
 	if ( $meta ) {
