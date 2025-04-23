@@ -259,7 +259,9 @@ function vipbp_filter_get_cover_image( $value, $args ) {
 
 	} elseif ( $args['object_dir'] === 'groups' ) {
 		$component = 'groups';
-		$meta      = groups_get_groupmeta( $args['item_id'], 'vipbp-group-cover', true );
+		if ( bp_is_active( 'groups' ) ) {
+			$meta = groups_get_groupmeta( $args['item_id'], 'vipbp-group-cover', true );
+		}
 	}
 
 	$dimensions = bp_attachments_get_cover_image_dimensions( $component );
